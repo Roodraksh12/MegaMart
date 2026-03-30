@@ -35,14 +35,22 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'SuperAdmin123!';
 // Initialize Firebase Admin SDK
 const serviceAccountPath = path.join(__dirname, 'serviceAccountKey.json');
 if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PROJECT_ID) {
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
-    })
-  });
-  console.log('Firebase Admin SDK initialized from environment variables.');
+  try {
+    let pk = process.env.FIREBASE_PRIVATE_KEY;
+    if (pk.startsWith('"') && pk.endsWith('"')) pk = pk.slice(1, -1);
+    if (pk.startsWith("'") && pk.endsWith("'")) pk = pk.slice(1, -1);
+
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: process.env.FIREBASE_PROJECT_ID,
+        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+        privateKey: pk.replace(/\\n/g, '\n'),
+      })
+    });
+    console.log('Firebase Admin SDK initialized from environment variables.');
+  } catch (err) {
+    console.error('🔥 Firebase Init Error (Check your PRIVATE_KEY spelling):', err.message);
+  }
 } else if (fs.existsSync(serviceAccountPath)) {
   const serviceAccount = require('./serviceAccountKey.json');
   admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
