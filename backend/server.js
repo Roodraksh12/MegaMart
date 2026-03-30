@@ -80,6 +80,11 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Supabase + Firebase Backend running!' });
 });
 
+// Root check
+app.get('/', (req, res) => {
+  res.json({ message: 'Welcome to SuperMart API! The backend is running perfectly.' });
+});
+
 // 2. Fetch all products
 app.get('/api/products', async (req, res) => {
   try {
