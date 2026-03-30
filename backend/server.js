@@ -373,6 +373,13 @@ app.post('/api/admin/upload-image', verifyAdmin, async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`SuperMart API running on port ${PORT}`);
-});
+
+// Auto-run if not deployed on Vercel's serverless platform
+if (process.env.NODE_ENV !== 'production' || process.env.RAILWAY_ENVIRONMENT) {
+  app.listen(PORT, () => {
+    console.log(`SuperMart API running on port ${PORT}`);
+  });
+}
+
+// Export for Vercel
+module.exports = app;
