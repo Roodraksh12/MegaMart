@@ -34,12 +34,21 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'SuperAdmin123!';
 
 // Initialize Firebase Admin SDK
 const serviceAccountPath = path.join(__dirname, 'serviceAccountKey.json');
-if (fs.existsSync(serviceAccountPath)) {
+if (process.env.FIREBASE_PRIVATE_KEY && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PROJECT_ID) {
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: process.env.FIREBASE_PROJECT_ID,
+      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+    })
+  });
+  console.log('Firebase Admin SDK initialized from environment variables.');
+} else if (fs.existsSync(serviceAccountPath)) {
   const serviceAccount = require('./serviceAccountKey.json');
   admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-  console.log('Firebase Admin SDK initialized.');
+  console.log('Firebase Admin SDK initialized from local file.');
 } else {
-  console.warn('⚠️  serviceAccountKey.json not found. Firebase auth verification will be disabled.');
+  console.warn('⚠️  Neither environment variables nor serviceAccountKey.json found. Firebase auth will fail.');
 }
 
 // --- MIDDLEWARE ---
