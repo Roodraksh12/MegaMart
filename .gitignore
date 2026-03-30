@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Build output
+frontend/dist/
+
+# Environment variables — NEVER commit these
+.env
+backend/.env
+frontend/.env
+*.env.local
+
+# Firebase service account — NEVER commit this
+backend/serviceAccountKey.json
+backend/*-firebase-adminsdk-*.json
+serviceAccountKey.json
+
+# Local SQLite database (production uses Supabase)
+backend/database.sqlite
+*.sqlite
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
