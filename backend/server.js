@@ -29,6 +29,9 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Free Tier Keep-Alive Ping endpoint
+app.get('/api/ping', (req, res) => res.status(200).send('pong'));
+
 const JWT_SECRET = process.env.JWT_SECRET || 'supermart_secret_super_secure';
 const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'SuperAdmin123!';
