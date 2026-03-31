@@ -25,7 +25,8 @@ export default {
       },
       animation: {
         'slide-in': 'slideIn 0.25s ease-out forwards',
-        'fade-in': 'fadeIn 0.15s ease-in forwards',
+        'fade-in': 'fadeIn 0.2s ease-out forwards',
+        'shimmer': 'shimmer 1.4s infinite linear',
       },
       keyframes: {
         slideIn: {
@@ -33,8 +34,12 @@ export default {
           '100%': { transform: 'translateX(0)' },
         },
         fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
+          '0%': { opacity: '0', transform: 'translateY(6px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        shimmer: {
+          '0%': { backgroundPosition: '-400px 0' },
+          '100%': { backgroundPosition: '400px 0' },
         },
       }
     },

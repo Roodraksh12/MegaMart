@@ -61,8 +61,8 @@ export default function ProductCard({ product }) {
               onClick={() => addToCart(product.id, 1)}
               disabled={!product.inStock}
               className={cn(
-                'border border-primary text-primary text-xs font-semibold px-3 py-1 rounded hover:bg-primary hover:text-white transition-colors',
-                !product.inStock && 'opacity-40 cursor-not-allowed border-gray-300 text-gray-400 hover:bg-transparent hover:text-gray-400'
+                'bg-primary text-white text-xs font-semibold px-4 py-1 rounded hover:bg-primary-dark transition-colors',
+                !product.inStock && 'opacity-40 cursor-not-allowed bg-gray-300 hover:bg-gray-300'
               )}
             >
               Add
