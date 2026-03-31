@@ -28,6 +28,11 @@ export default function AdminDashboard() {
   const [pwLoading, setPwLoading] = useState(false);
   const [showPw, setShowPw] = useState({ current: false, new: false, confirm: false });
 
+  // Bulk Product Add State
+  const [showBulkAdd, setShowBulkAdd] = useState(false);
+  const [bulkText, setBulkText] = useState('');
+  const [bulkStatus, setBulkStatus] = useState({ loading: false, msg: '', isError: false });
+
   // New Product Modal State
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [newProduct, setNewProduct] = useState({ name: '', category: 'veg-fruits', price: '', mrp: '', image: '📦', unit: '1 pc', in_stock: true, is_fresh: false });
@@ -179,6 +184,58 @@ export default function AdminDashboard() {
       if (res.ok) { setShowAddProduct(false); setNewProduct({ name: '', category: 'veg-fruits', price: '', mrp: '', image: '📦', unit: '1 pc', in_stock: true, is_fresh: false }); setImageFile(null); setImagePreview(null); fetchProducts(); }
       else alert('Failed to save product');
     } catch (err) { console.error(err); alert('Error: ' + err.message); } finally { setIsUploading(false); }
+  };
+
+  const handleBulkSubmit = async (e) => {
+    e.preventDefault();
+    setBulkStatus({ loading: true, msg: '', isError: false });
+    
+    const lines = bulkText.split('\n').map(l => l.trim()).filter(l => l);
+    if (lines.length === 0) {
+      setBulkStatus({ loading: false, msg: 'No data provided', isError: true });
+      return;
+    }
+
+    const payloadProducts = [];
+    for (const line of lines) {
+      const cols = line.split(',').map(c => c.trim());
+      if (cols.length >= 3) {
+        payloadProducts.push({
+          name: cols[0],
+          category: cols[1] || 'veg-fruits',
+          price: Number(cols[2]) || 0,
+          mrp: cols[3] && !isNaN(Number(cols[3])) ? Number(cols[3]) : Number(cols[2]) || 0,
+          image: cols[4] || '📦',
+          unit: cols[5] || '1 pc',
+          in_stock: cols[6] ? cols[6].toLowerCase() !== 'false' : true,
+          is_fresh: cols[7] ? cols[7].toLowerCase() === 'true' : false,
+        });
+      }
+    }
+
+    if (payloadProducts.length === 0) {
+      setBulkStatus({ loading: false, msg: 'No valid rows found', isError: true });
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/products/bulk`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify({ products: payloadProducts })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setBulkStatus({ loading: false, msg: `✅ ${data.message || 'Success!'}`, isError: false });
+        setBulkText('');
+        fetchProducts();
+        setTimeout(() => setShowBulkAdd(false), 2000);
+      } else {
+        setBulkStatus({ loading: false, msg: data.error || 'Failed to bulk add', isError: true });
+      }
+    } catch (err) {
+      setBulkStatus({ loading: false, msg: 'Network error', isError: true });
+    }
   };
 
   const handleEditProductClick = (product) => {
@@ -420,15 +477,101 @@ export default function AdminDashboard() {
               <span className="text-2xl">▶️</span>
               <p>Toggle stock levels or add new products to your live inventory.</p>
             </div>
-            <button onClick={() => {
-              setNewProduct({ name: '', category: 'veg-fruits', price: '', mrp: '', image: '📦', unit: '1 pc', in_stock: true, is_fresh: false });
-              setImageFile(null);
-              setImagePreview(null);
-              setShowAddProduct(true);
-            }} className="btn-primary flex items-center gap-2 whitespace-nowrap shadow-md">
-              <Plus size={16} /> Add New Product
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setBulkStatus({ loading: false, msg: '', isError: false }); setShowBulkAdd(!showBulkAdd); setShowAddProduct(false); }}
+                style={showBulkAdd
+                  ? { background: '#4f46e5', border: '1.5px solid #4f46e5', color: '#fff' }
+                  : { background: '#eef2ff', border: '1.5px solid #a5b4fc', color: '#4338ca' }
+                }
+                className="flex items-center gap-2 whitespace-nowrap px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm"
+              >
+                <Plus size={16} /> Bulk Add (CSV)
+              </button>
+              <button onClick={() => {
+                setNewProduct({ name: '', category: 'veg-fruits', price: '', mrp: '', image: '📦', unit: '1 pc', in_stock: true, is_fresh: false });
+                setImageFile(null);
+                setImagePreview(null);
+                setShowBulkAdd(false);
+                setShowAddProduct(true);
+              }} className="btn-primary flex items-center gap-2 whitespace-nowrap shadow-md">
+                <Plus size={16} /> Add New Product
+              </button>
+            </div>
           </div>
+
+          {showBulkAdd && (
+            <div className="bg-white border-2 border-indigo-100 rounded-xl mb-8 shadow-md animate-fade-in overflow-hidden">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex justify-between items-center">
+                <div>
+                  <h3 className="font-bold text-lg text-white flex items-center gap-2">📋 Bulk Add Products via CSV</h3>
+                  <p className="text-indigo-200 text-xs mt-0.5">Paste multiple products at once — one per line</p>
+                </div>
+                <button type="button" onClick={() => setShowBulkAdd(false)} className="text-indigo-200 hover:text-white font-bold text-lg leading-none transition-colors">✕</button>
+              </div>
+
+              <div className="p-6">
+                {/* Format Guide */}
+                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 mb-5">
+                  <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider mb-3">📌 Column Format (comma-separated)</p>
+                  <div className="grid grid-cols-4 sm:grid-cols-8 gap-1 mb-3">
+                    {['Name','Category','Price','MRP','Emoji/URL','Unit','In Stock','Fresh?'].map((col, i) => (
+                      <div key={i} className="bg-white border border-indigo-200 rounded-lg px-2 py-1.5 text-center">
+                        <span className="block text-[10px] font-bold text-indigo-400 uppercase">col {i+1}</span>
+                        <span className="text-xs font-semibold text-indigo-800">{col}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-white border border-dashed border-indigo-200 rounded-lg p-2.5 font-mono text-xs text-gray-600 leading-relaxed">
+                    <span className="text-indigo-400">// Example rows:</span><br/>
+                    Organic Apple, veg-fruits, 120, 150, 🍎, 1 kg, true, false<br/>
+                    Full Cream Milk, dairy, 60, 65, 🥛, 1 L, true, false<br/>
+                    Whole Wheat Bread, bakery, 45, 55, 🍞, 400 g, true, false
+                  </div>
+                  <div className="mt-2.5 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] text-indigo-700">
+                    <span>📂 Categories: <b>veg-fruits, dairy, bakery, cleaning, beverages, snacks, staples, frozen</b></span>
+                    <span>✅ In Stock: <b>true</b> or <b>false</b></span>
+                  </div>
+                </div>
+
+                {/* Textarea */}
+                <form onSubmit={handleBulkSubmit}>
+                  <div className="relative">
+                    <textarea
+                      required
+                      rows={7}
+                      value={bulkText}
+                      onChange={e => setBulkText(e.target.value)}
+                      className="w-full border-2 border-gray-200 bg-gray-50 rounded-xl p-4 text-sm font-mono focus:outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 mb-1 resize-y transition-colors"
+                      placeholder={`Carrot, veg-fruits, 40, 50, 🥕, 500g, true, true\nMilk, dairy, 60, 65, 🥛, 1 L, true, false\nBread, bakery, 35, 45, 🍞, 200g, true, false`}
+                    />
+                    {bulkText.trim() && (
+                      <div className="text-right text-xs text-indigo-600 font-semibold mb-3">
+                        {bulkText.split('\n').filter(l => l.trim()).length} product(s) queued
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                      {bulkStatus.msg && (
+                        <div className={`text-sm font-semibold flex items-center gap-2 px-4 py-2.5 rounded-lg ${bulkStatus.isError ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-green-50 text-green-700 border border-green-200'}`}>
+                          {bulkStatus.msg}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={bulkStatus.loading || !bulkText.trim()}
+                      className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold py-2.5 px-8 rounded-xl shadow-md transition-colors flex items-center gap-2 whitespace-nowrap"
+                    >
+                      {bulkStatus.loading ? <><span className="animate-spin">⏳</span> Processing...</> : <><span>🚀</span> Parse &amp; Upload</>}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
 
           {showAddProduct && (
             <div className="bg-white border-2 border-primary/20 rounded-xl p-6 mb-8 shadow-lg">

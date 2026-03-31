@@ -450,6 +450,7 @@ app.post('/api/admin/products', verifyAdmin, async (req, res) => {
   const id = `p_${Date.now()}`;
   const discount = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
   const tags = [category];
+  if (is_fresh) tags.push('fresh');
 
   const { error } = await supabase.from('products').insert([{
     id, name, category, price, mrp,
@@ -463,6 +464,48 @@ app.post('/api/admin/products', verifyAdmin, async (req, res) => {
 
   if (error) return res.status(500).json({ error: 'Failed to create product' });
   res.json({ message: 'Product created successfully', productId: id });
+});
+
+// 9.5. Create Multiple Products (Admin Bulk Add)
+app.post('/api/admin/products/bulk', verifyAdmin, async (req, res) => {
+  const { products } = req.body;
+  if (!Array.isArray(products) || products.length === 0) {
+    return res.status(400).json({ error: 'Expected a non-empty array of products' });
+  }
+
+  const newProducts = products.map((prod, index) => {
+    const { name, category, price, mrp, image, unit, in_stock, is_fresh } = prod;
+    
+    // Fallback ID to ensure uniqueness across tight loop
+    const id = `p_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 5)}`;
+    const parsedPrice = Number(price) || 0;
+    const parsedMrp = Number(mrp) || 0;
+    const discount = parsedMrp > parsedPrice ? Math.round(((parsedMrp - parsedPrice) / parsedMrp) * 100) : 0;
+    const tags = is_fresh ? [category, 'fresh'] : [category];
+
+    return {
+      id,
+      name: name || 'Untitled Product',
+      category: category || 'veg-fruits',
+      price: parsedPrice,
+      mrp: parsedMrp,
+      image: image || '📦',
+      unit: unit || '1 pc',
+      in_stock: in_stock !== false,
+      stock_level: 'high',
+      is_fresh: is_fresh === true,
+      tags,
+      discount
+    };
+  });
+
+  const { error } = await supabase.from('products').insert(newProducts);
+
+  if (error) {
+    console.error('Bulk insert error:', error);
+    return res.status(500).json({ error: 'Failed to create bulk products' });
+  }
+  res.json({ message: `Successfully added ${newProducts.length} products.` });
 });
 
 // 10. Upload product image to Supabase Storage and return URL (Admin)
