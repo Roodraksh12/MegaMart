@@ -4,30 +4,37 @@
 
 @layer base {
   body {
-    @apply bg-background text-text-dark font-sans antialiased selection:bg-primary/20 selection:text-primary-dark;
+    @apply text-text-dark font-sans antialiased selection:bg-primary/20 selection:text-primary;
+    background-color: #f8fafc;
+    background-image: 
+      radial-gradient(at 80% 0%, rgba(226, 232, 240, 0.4) 0px, transparent 40%),
+      radial-gradient(at 20% 100%, rgba(241, 245, 249, 0.6) 0px, transparent 40%),
+      radial-gradient(at 50% 50%, rgba(255, 255, 255, 0.8) 0px, transparent 80%);
+    background-attachment: fixed;
+    background-size: cover;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary text-white px-5 py-2.5 rounded-full font-medium transition-all hover:bg-primary-dark hover:shadow-soft active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-gradient-to-b from-primary to-black text-white px-6 py-2.5 rounded-full font-medium transition-all hover:shadow-lg hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed border border-white/10;
   }
   
   .btn-secondary {
-    @apply bg-white text-text-dark px-5 py-2.5 rounded-full font-medium border border-gray-200 transition-all hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-white/40 backdrop-blur-md text-text-dark px-6 py-2.5 rounded-full font-medium border border-white/60 shadow-sm transition-all hover:bg-white/60 hover:shadow-glass hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
   .btn-outline {
-    @apply border border-primary text-primary px-5 py-2.5 rounded-full font-medium transition-all hover:bg-primary hover:text-white hover:shadow-soft disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply border border-primary text-primary px-6 py-2.5 rounded-full font-medium transition-all hover:bg-primary hover:text-white hover:shadow-glass disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
   .card {
-    @apply bg-surface rounded-2xl border border-gray-100/50 shadow-soft overflow-hidden transition-shadow hover:shadow-lg;
+    @apply bg-white/40 backdrop-blur-2xl rounded-3xl border border-white/60 shadow-soft overflow-hidden transition-all hover:shadow-glass hover:bg-white/50;
   }
 }
 
 .bg-glass {
-  @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-glass;
+  @apply bg-white/50 backdrop-blur-2xl border border-white/40 shadow-glass;
 }
 
 /* Hide scrollbar utility */

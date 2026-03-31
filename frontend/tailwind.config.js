@@ -8,20 +8,24 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#10B981',
-          dark: '#059669',
-          light: '#34D399',
+          DEFAULT: '#0f172a', // Slate 900
+          dark: '#000000',    // Black
+          light: '#334155',   // Slate 700
         },
-        background: '#F9FAFB',
-        surface: '#FFFFFF',
+        accent: {
+          DEFAULT: '#e2e8f0', // Very subtle slate for highlights
+        },
+        background: '#f8fafc', // Very clean white-slate
+        surface: '#ffffff',
         text: {
-          dark: '#111827',
-          muted: '#6B7280',
+          dark: '#020617', // Slate 950
+          muted: '#64748b', // Slate 500
         }
       },
       boxShadow: {
-        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
-        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.03)',
+        'soft': '0 4px 30px rgba(0, 0, 0, 0.03)',
+        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.04)',
+        'glass-hover': '0 8px 32px 0 rgba(31, 38, 135, 0.08)',
       },
       fontFamily: {
         sans: ['DM Sans', 'sans-serif'],

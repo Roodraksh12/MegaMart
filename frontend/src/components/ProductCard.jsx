@@ -12,14 +12,14 @@ export default function ProductCard({ product }) {
   const isWishlisted = wishlist.includes(product.id);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100/50 shadow-soft overflow-hidden flex flex-col h-full transition-all hover:shadow-lg hover:-translate-y-1">
+    <div className="card flex flex-col h-full">
 
       {/* Clickable area: image + name → goes to product detail page */}
       <Link to={`/product/${product.id}`} className="block">
         {/* Image */}
         <div className="relative bg-gray-50 p-3 flex items-center justify-center" style={{ aspectRatio: '1' }}>
           {product.discount > 0 && (
-            <span className="absolute top-2 left-2 bg-gradient-to-r from-green-500 to-green-600 shadow-sm text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">
+            <span className="absolute top-3 left-3 bg-black/80 backdrop-blur-md shadow-sm text-white text-[10px] font-bold px-2 py-1 rounded-full">
               {product.discount}% OFF
             </span>
           )}
@@ -39,8 +39,8 @@ export default function ProductCard({ product }) {
           )}
 
           {!product.inStock && (
-            <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
-              <span className="text-xs font-semibold text-gray-500 bg-white border border-gray-200 px-2 py-1 rounded">Out of Stock</span>
+            <div className="absolute inset-0 bg-white/50 backdrop-blur-sm flex items-center justify-center">
+              <span className="text-xs font-bold tracking-widest uppercase text-black bg-white/80 border border-white px-3 py-1.5 rounded-full shadow-lg">Out of Stock</span>
             </div>
           )}
         </div>
@@ -66,26 +66,26 @@ export default function ProductCard({ product }) {
             onClick={() => addToCart(product.id, 1)}
             disabled={!product.inStock}
             className={cn(
-              'bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-primary-dark hover:shadow-md active:scale-95 transition-all',
-              !product.inStock && 'opacity-40 cursor-not-allowed bg-gray-300 hover:bg-gray-300 hover:shadow-none'
+              'btn-primary !px-5 !py-1.5 !text-xs',
+              !product.inStock && 'opacity-40 cursor-not-allowed bg-gray-300 hover:bg-gray-300 hover:shadow-none !border-transparent'
             )}
           >
             Add
           </button>
         ) : (
-          <div className="flex items-center border border-primary rounded-full overflow-hidden bg-white shadow-sm">
+          <div className="flex items-center bg-black/5 border border-black/10 rounded-full overflow-hidden shadow-inner backdrop-blur-md">
             <button
-              className="px-2 py-1.5 text-primary hover:bg-primary hover:text-white transition-colors"
+              className="px-3 py-1.5 text-text-dark hover:bg-black hover:text-white transition-all font-bold"
               onClick={() => updateQuantity(product.id, quantity - 1)}
             >
-              <Minus size={12} />
+              <Minus size={12} strokeWidth={3} />
             </button>
-            <span className="px-2 text-xs font-bold text-primary">{quantity}</span>
+            <span className="px-1 text-xs font-bold text-text-dark w-6 text-center">{quantity}</span>
             <button
-              className="px-2 py-1.5 text-primary hover:bg-primary hover:text-white transition-colors"
+              className="px-3 py-1.5 text-text-dark hover:bg-black hover:text-white transition-all font-bold"
               onClick={() => updateQuantity(product.id, quantity + 1)}
             >
-              <Plus size={12} />
+              <Plus size={12} strokeWidth={3} />
             </button>
           </div>
         )}

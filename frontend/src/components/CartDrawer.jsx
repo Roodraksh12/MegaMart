@@ -95,14 +95,14 @@ export default function CartDrawer() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white/95 backdrop-blur-xl shadow-2xl z-50 flex flex-col"
+            className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white/40 backdrop-blur-3xl border-l border-white/60 shadow-[-20px_0_60px_rgba(0,0,0,0.05)] z-50 flex flex-col"
           >
             {/* Header */}
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-surface">
+            <div className="p-4 border-b border-white/20 flex justify-between items-center bg-white/20">
               <div className="flex items-center gap-2">
-                <ShoppingBag className="text-primary" />
-                <h2 className="font-display font-bold text-xl text-text-dark">My Cart</h2>
-                <span className="bg-primary/10 text-primary text-xs font-bold px-2 py-1 rounded-full">
+                <ShoppingBag className="text-black" />
+                <h2 className="font-display font-bold text-xl text-black">My Cart</h2>
+                <span className="bg-black text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
                   {cart.length} items
                 </span>
               </div>
@@ -126,20 +126,20 @@ export default function CartDrawer() {
 
             {/* Delivery progress bar */}
             {cart.length > 0 && (
-              <div className="px-4 py-3 bg-white border-b border-gray-100">
+              <div className="px-4 py-3 bg-white/30 border-b border-white/20">
                 {isDeliveryFree ? (
-                  <div className="flex items-center gap-2 text-green-600">
+                  <div className="flex items-center gap-2 text-black">
                     <CheckCircle size={15} className="flex-shrink-0" />
-                    <p className="text-xs font-semibold">🎊 You've unlocked FREE delivery!</p>
+                    <p className="text-xs font-bold">🎊 You've unlocked FREE delivery!</p>
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-500 mb-1.5">
-                    Add <span className="font-bold text-primary">₹{amountToFreeDelivery}</span> more for <span className="font-semibold text-green-600">FREE delivery</span>
+                  <p className="text-xs text-text-dark mb-1.5 font-medium">
+                    Add <span className="font-bold text-black">₹{amountToFreeDelivery}</span> more for <span className="font-bold text-black">FREE delivery</span>
                   </p>
                 )}
-                <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mt-1">
+                <div className="h-1 bg-white/50 rounded-full overflow-hidden mt-1 shadow-inner">
                   <motion.div
-                    className="h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full"
+                    className="h-full bg-black rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${progressPercent}%` }}
                     transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -164,8 +164,8 @@ export default function CartDrawer() {
                 </div>
               ) : (
                 cart.map((item) => (
-                  <div key={item.id} className="flex gap-4 p-3 bg-white/80 rounded-2xl border border-gray-100/50 shadow-soft backdrop-blur-sm">
-                    <Link to={`/product/${item.id}`} onClick={toggleCart} className="w-16 h-16 flex items-center justify-center bg-gray-50 rounded-xl text-4xl flex-shrink-0">
+                  <div key={item.id} className="flex gap-4 p-3 bg-white/40 rounded-3xl border border-white/50 shadow-glass backdrop-blur-md">
+                    <Link to={`/product/${item.id}`} onClick={toggleCart} className="w-16 h-16 flex items-center justify-center bg-white/40 rounded-2xl text-4xl flex-shrink-0 border border-white/30">
                       {item.image?.startsWith('http')
                         ? <img src={item.image} alt={item.name} className="w-full h-full object-contain rounded-lg" />
                         : item.image}
@@ -192,21 +192,21 @@ export default function CartDrawer() {
                           )}
                         </div>
                         
-                        <div className="flex items-center border border-gray-200 rounded-full overflow-hidden bg-white shadow-sm">
+                        <div className="flex items-center border border-black/10 rounded-full overflow-hidden bg-black/5 shadow-inner">
                           <button 
-                            className="px-2 py-1 flex items-center justify-center hover:bg-gray-200 transition-colors"
+                            className="px-2 py-1.5 flex items-center justify-center hover:bg-black hover:text-white transition-all font-bold"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           >
-                            -
+                            <Minus size={12} strokeWidth={3} />
                           </button>
-                          <span className="px-3 py-1 font-medium text-sm bg-surface w-8 text-center">
+                          <span className="px-3 py-1 font-bold text-sm w-8 text-center bg-transparent">
                             {item.quantity}
                           </span>
                           <button 
-                            className="px-2 py-1 flex items-center justify-center hover:bg-gray-200 text-primary transition-colors"
+                            className="px-2 py-1.5 flex items-center justify-center hover:bg-black hover:text-white transition-all font-bold"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           >
-                            +
+                            <Plus size={12} strokeWidth={3} />
                           </button>
                         </div>
                       </div>
@@ -218,7 +218,7 @@ export default function CartDrawer() {
 
             {/* Footer / Checkout */}
             {cart.length > 0 && (
-              <div className="border-t border-gray-200 bg-surface p-4 space-y-3 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)]">
+              <div className="border-t border-white/30 bg-white/30 backdrop-blur-xl p-4 space-y-3 shadow-[0_-10px_30px_-5px_rgba(0,0,0,0.05)]">
 
                 {/* Promo Code Input */}
                 <div>
