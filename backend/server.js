@@ -227,7 +227,8 @@ app.get('/api/admin/account', verifyAdmin, async (req, res) => {
     const { data } = await supabase.from('admin_settings').select('key, value').in('key', ['mart_name', 'mart_email', 'mart_phone']);
     const settings = { mart_name: '', mart_email: '', mart_phone: '919876543210' };
     (data || []).forEach(row => { settings[row.key] = row.value; });
-    res.json(settings);
+    const currentUsername = await getAdminUsername();
+    res.json({ ...settings, admin_username: currentUsername });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch account details' });
   }
@@ -235,18 +236,22 @@ app.get('/api/admin/account', verifyAdmin, async (req, res) => {
 
 // 4.8. Update Mart Owner Details (Admin - requires password)
 app.post('/api/admin/account', verifyAdmin, async (req, res) => {
-  const { name, email, phone, password } = req.body;
+  const { name, email, phone, username, password } = req.body;
   if (!password) return res.status(400).json({ error: 'Admin password is required to save changes' });
   
   const storedPassword = await getAdminPassword();
   if (password !== storedPassword) return res.status(401).json({ error: 'Incorrect admin password' });
 
   try {
-    await supabase.from('admin_settings').upsert([
+    const upserts = [
       { key: 'mart_name', value: name || '' },
       { key: 'mart_email', value: email || '' },
       { key: 'mart_phone', value: phone || '' }
-    ]);
+    ];
+    if (username && username.trim().length > 0) {
+      upserts.push({ key: 'admin_username', value: username.trim() });
+    }
+    await supabase.from('admin_settings').upsert(upserts);
     res.json({ message: 'Account details updated successfully' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to update account details' });

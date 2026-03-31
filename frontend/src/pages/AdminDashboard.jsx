@@ -41,7 +41,7 @@ export default function AdminDashboard() {
   const [deliveryMsg, setDeliveryMsg] = useState('');
 
   // ── Account state ──────────────────────────────────
-  const [accountForm, setAccountForm] = useState({ name: '', email: '', phone: '', password: '' });
+  const [accountForm, setAccountForm] = useState({ name: '', email: '', phone: '', username: '', password: '' });
   const [accountMsg, setAccountMsg] = useState({ text: '', isError: false });
   const [accountSaving, setAccountSaving] = useState(false);
 
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
       const res = await fetch(`${API_URL}/api/admin/account`, { headers: { 'Authorization': `Bearer ${adminToken}` } });
       if (res.ok) { 
         const data = await res.json(); 
-        setAccountForm(f => ({ ...f, name: data.mart_name || '', email: data.mart_email || '', phone: data.mart_phone || '' })); 
+        setAccountForm(f => ({ ...f, name: data.mart_name || '', email: data.mart_email || '', phone: data.mart_phone || '', username: data.admin_username || '' })); 
       }
     } catch (err) { console.error(err); }
   }
@@ -641,6 +641,11 @@ export default function AdminDashboard() {
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Owner / Mart Name</label>
                 <input type="text" value={accountForm.name} onChange={e => setAccountForm(f => ({ ...f, name: e.target.value }))} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="e.g. SuperMart" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Admin Login Username</label>
+                <input type="text" required value={accountForm.username} onChange={e => setAccountForm(f => ({ ...f, username: e.target.value }))} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="e.g. admin" />
+                <p className="text-[10px] text-gray-400 mt-1">Changing this requires logging in with the new username</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-600 mb-1">Support Email</label>
