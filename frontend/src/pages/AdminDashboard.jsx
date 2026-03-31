@@ -170,10 +170,32 @@ export default function AdminDashboard() {
         if (!uploadRes.ok) throw new Error(uploadData.error || 'Image upload failed');
         imageUrl = uploadData.url;
       }
-      const res = await fetch(`${API_URL}/api/admin/products`, { method: 'POST', headers: authHeaders, body: JSON.stringify({ ...newProduct, image: imageUrl, price: Number(newProduct.price), mrp: Number(newProduct.mrp) }) });
+      
+      const isEditing = !!newProduct.id;
+      const endpoint = isEditing ? `${API_URL}/api/admin/products/${newProduct.id}` : `${API_URL}/api/admin/products`;
+      const method = isEditing ? 'PATCH' : 'POST';
+
+      const res = await fetch(endpoint, { method, headers: authHeaders, body: JSON.stringify({ ...newProduct, image: imageUrl, price: Number(newProduct.price), mrp: Number(newProduct.mrp) }) });
       if (res.ok) { setShowAddProduct(false); setNewProduct({ name: '', category: 'veg-fruits', price: '', mrp: '', image: '📦', unit: '1 pc', in_stock: true, is_fresh: false }); setImageFile(null); setImagePreview(null); fetchProducts(); }
-      else alert('Failed to add product');
+      else alert('Failed to save product');
     } catch (err) { console.error(err); alert('Error: ' + err.message); } finally { setIsUploading(false); }
+  };
+
+  const handleEditProductClick = (product) => {
+    setNewProduct({
+      id: product.id,
+      name: product.name,
+      category: product.category,
+      price: product.price,
+      mrp: product.originalPrice || product.price,
+      image: product.image,
+      unit: product.unit,
+      in_stock: product.inStock,
+      is_fresh: product.tags?.includes('fresh') || false
+    });
+    setImageFile(null);
+    setImagePreview(null);
+    setShowAddProduct(true);
   };
 
   const handleChangePassword = async (e) => {
@@ -398,7 +420,12 @@ export default function AdminDashboard() {
               <span className="text-2xl">▶️</span>
               <p>Toggle stock levels or add new products to your live inventory.</p>
             </div>
-            <button onClick={() => setShowAddProduct(true)} className="btn-primary flex items-center gap-2 whitespace-nowrap shadow-md">
+            <button onClick={() => {
+              setNewProduct({ name: '', category: 'veg-fruits', price: '', mrp: '', image: '📦', unit: '1 pc', in_stock: true, is_fresh: false });
+              setImageFile(null);
+              setImagePreview(null);
+              setShowAddProduct(true);
+            }} className="btn-primary flex items-center gap-2 whitespace-nowrap shadow-md">
               <Plus size={16} /> Add New Product
             </button>
           </div>
@@ -406,8 +433,8 @@ export default function AdminDashboard() {
           {showAddProduct && (
             <div className="bg-white border-2 border-primary/20 rounded-xl p-6 mb-8 shadow-lg">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-xl text-gray-900 flex items-center gap-2">✨ Ship New Product</h3>
-                <button onClick={() => setShowAddProduct(false)} className="text-gray-400 hover:text-gray-600 font-bold">✕ Close</button>
+                <h3 className="font-bold text-xl text-gray-900 flex items-center gap-2">✨ {newProduct.id ? 'Edit Product' : 'Ship New Product'}</h3>
+                <button type="button" onClick={() => setShowAddProduct(false)} className="text-gray-400 hover:text-gray-600 font-bold">✕ Close</button>
               </div>
               <form onSubmit={handleAddProduct} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div><label className="block text-xs font-semibold mb-1">Product Name</label><input type="text" required value={newProduct.name} onChange={e => setNewProduct({ ...newProduct, name: e.target.value })} className="w-full border rounded p-2 text-sm" placeholder="e.g., Organic Bananas" /></div>
@@ -448,7 +475,7 @@ export default function AdminDashboard() {
                     Mark as "Today's Fresh Pick"
                   </label>
                   <button type="submit" disabled={isUploading} className="btn-primary py-2 px-8 shadow-md disabled:opacity-60 flex items-center gap-2">
-                    {isUploading ? <><span className="animate-spin">⏳</span> Uploading...</> : 'Create Product'}
+                    {isUploading ? <><span className="animate-spin">⏳</span> Saving...</> : (newProduct.id ? 'Save Changes' : 'Create Product')}
                   </button>
                 </div>
               </form>
@@ -464,9 +491,14 @@ export default function AdminDashboard() {
                 <div className="flex-1">
                   <h3 className="font-bold text-sm text-gray-900 leading-tight line-clamp-2">{product.name}</h3>
                   <p className="text-xs text-gray-400 mt-0.5">{product.unit} • ₹{product.price}</p>
-                  <button onClick={() => handleToggleStock(product.id, product.inStock)} className={cn('text-xs font-bold px-3 py-1.5 rounded-full transition-colors mt-2', product.inStock ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200')}>
-                    {product.inStock ? '✅ In Stock' : '❌ Out of Stock'}
-                  </button>
+                  <div className="flex items-center gap-2 mt-2">
+                    <button onClick={() => handleToggleStock(product.id, product.inStock)} className={cn('text-xs font-bold px-3 py-1.5 rounded-full transition-colors', product.inStock ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-red-100 text-red-700 hover:bg-red-200')}>
+                      {product.inStock ? '✅ In Stock' : '❌ Out of Stock'}
+                    </button>
+                    <button onClick={() => handleEditProductClick(product)} className="text-xs font-bold px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
+                      ✏️ Edit
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

@@ -396,10 +396,48 @@ app.patch('/api/admin/orders/:id', verifyAdmin, async (req, res) => {
   res.json({ message: 'Order updated' });
 });
 
-// 8. Update product stock (Admin)
+// 8. Update product (Admin)
 app.patch('/api/admin/products/:id', verifyAdmin, async (req, res) => {
-  const { in_stock } = req.body;
-  const { error } = await supabase.from('products').update({ in_stock }).eq('id', req.params.id);
+  const { name, category, price, mrp, image, unit, in_stock, is_fresh } = req.body;
+  
+  const updatePayload = {};
+  if (name !== undefined) updatePayload.name = name;
+  if (category !== undefined) {
+    updatePayload.category = category;
+    updatePayload.tags = [category].concat(is_fresh ? ['fresh'] : []);
+  }
+  if (price !== undefined) updatePayload.price = Number(price);
+  if (mrp !== undefined) updatePayload.mrp = Number(mrp);
+  if (image !== undefined) updatePayload.image = image;
+  if (unit !== undefined) updatePayload.unit = unit;
+  if (in_stock !== undefined) updatePayload.in_stock = Boolean(in_stock);
+  if (is_fresh !== undefined) {
+    updatePayload.is_fresh = Boolean(is_fresh);
+    // Update tags logically if category is also present or skip if complex, just handle tags simple
+  }
+
+  // Recalculate discount if price/mrp are updated
+  if (updatePayload.price !== undefined || updatePayload.mrp !== undefined) {
+    // Fetch current to calculate properly if one is missing, but usually both are passed in an edit form.
+    // For safety, assume the edit form passes the whole object.
+    if (price !== undefined && mrp !== undefined) {
+        updatePayload.discount_percent = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
+    }
+  }
+
+  // Tags recalculation if modifying category or is_fresh
+  if (category !== undefined || is_fresh !== undefined) {
+    const finalCategory = category !== undefined ? category : req.body.category_fallback; 
+    const finalFresh = is_fresh !== undefined ? is_fresh : req.body.is_fresh_fallback;
+    if (finalCategory) {
+       updatePayload.tags = finalFresh ? [finalCategory, 'fresh'] : [finalCategory];
+    }
+  }
+
+  // If nothing to update, return ok
+  if (Object.keys(updatePayload).length === 0) return res.json({ message: 'No changes provided' });
+
+  const { error } = await supabase.from('products').update(updatePayload).eq('id', req.params.id);
   if (error) return res.status(500).json({ error: 'Failed to update product' });
   res.json({ message: 'Product updated' });
 });
