@@ -348,6 +348,3 @@ export default function Checkout() {
     </div>
   );
 }
-
-// Re-importing Banknote here just in case missing from lucide-react initially
-import { Banknote } from 'lucide-react';
