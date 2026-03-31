@@ -398,6 +398,116 @@ app.post('/api/admin/upload-image', verifyAdmin, async (req, res) => {
   }
 });
 
+// 11. Get store settings (delivery fee config)
+app.get('/api/admin/settings', verifyAdmin, async (req, res) => {
+  try {
+    const { data } = await supabase.from('admin_settings').select('key, value');
+    const settings = {};
+    (data || []).forEach(row => { settings[row.key] = row.value; });
+    res.json({
+      deliveryFee: Number(settings.delivery_fee ?? 30),
+      freeAbove: Number(settings.free_delivery_above ?? 150),
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch settings' });
+  }
+});
+
+// 12. Update store settings (delivery fee config)
+app.post('/api/admin/settings', verifyAdmin, async (req, res) => {
+  const { deliveryFee, freeAbove } = req.body;
+  try {
+    await supabase.from('admin_settings').upsert({ key: 'delivery_fee', value: String(deliveryFee) });
+    await supabase.from('admin_settings').upsert({ key: 'free_delivery_above', value: String(freeAbove) });
+    res.json({ message: 'Delivery settings saved' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to save settings' });
+  }
+});
+
+// 13. Get all promo codes (Admin)
+app.get('/api/admin/promo-codes', verifyAdmin, async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('admin_settings')
+      .select('key, value')
+      .like('key', 'promo_%');
+    if (error) throw error;
+    const codes = (data || []).map(row => {
+      try { return JSON.parse(row.value); } catch { return null; }
+    }).filter(Boolean);
+    res.json(codes);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch promo codes' });
+  }
+});
+
+// 14. Create a promo code (Admin)
+app.post('/api/admin/promo-codes', verifyAdmin, async (req, res) => {
+  const { code, discountType, discountValue, minOrder, maxUses, expiresAt } = req.body;
+  if (!code || !discountValue) return res.status(400).json({ error: 'code and discountValue required' });
+  const promoData = {
+    code: code.toUpperCase().trim(),
+    discountType: discountType || 'percent',
+    discountValue: Number(discountValue),
+    minOrder: Number(minOrder) || 0,
+    maxUses: Number(maxUses) || 0,
+    usedCount: 0,
+    expiresAt: expiresAt || null,
+    active: true,
+    createdAt: new Date().toISOString(),
+  };
+  const key = `promo_${promoData.code}`;
+  // Check if code already exists
+  const { data: existing } = await supabase.from('admin_settings').select('key').eq('key', key).single();
+  if (existing) return res.status(409).json({ error: 'Promo code already exists' });
+  const { error } = await supabase.from('admin_settings').insert({ key, value: JSON.stringify(promoData) });
+  if (error) return res.status(500).json({ error: 'Failed to create promo code' });
+  res.json({ message: 'Promo code created', promo: promoData });
+});
+
+// 15. Delete a promo code (Admin)
+app.delete('/api/admin/promo-codes/:code', verifyAdmin, async (req, res) => {
+  const key = `promo_${req.params.code.toUpperCase()}`;
+  const { error } = await supabase.from('admin_settings').delete().eq('key', key);
+  if (error) return res.status(500).json({ error: 'Failed to delete promo code' });
+  res.json({ message: 'Promo code deleted' });
+});
+
+// 16. Public: validate a promo code at checkout
+app.post('/api/promo/validate', async (req, res) => {
+  const { code, orderTotal } = req.body;
+  if (!code) return res.status(400).json({ error: 'Code required' });
+  const key = `promo_${code.toUpperCase().trim()}`;
+  const { data } = await supabase.from('admin_settings').select('value').eq('key', key).single();
+  if (!data) return res.status(404).json({ error: 'Invalid promo code' });
+  let promo;
+  try { promo = JSON.parse(data.value); } catch { return res.status(500).json({ error: 'Corrupt promo data' }); }
+  if (!promo.active) return res.status(400).json({ error: 'This promo code is inactive' });
+  if (promo.expiresAt && new Date(promo.expiresAt) < new Date()) return res.status(400).json({ error: 'Promo code has expired' });
+  if (promo.minOrder && orderTotal < promo.minOrder) return res.status(400).json({ error: `Minimum order ₹${promo.minOrder} required for this code` });
+  if (promo.maxUses && promo.usedCount >= promo.maxUses) return res.status(400).json({ error: 'Promo code usage limit reached' });
+  const discount = promo.discountType === 'percent'
+    ? Math.round((promo.discountValue / 100) * orderTotal)
+    : promo.discountValue;
+  res.json({ valid: true, code: promo.code, discountType: promo.discountType, discountValue: promo.discountValue, discount });
+});
+
+// 17. Public: get checkout delivery settings (no auth needed for checkout)
+app.get('/api/settings/delivery', async (req, res) => {
+  try {
+    const { data } = await supabase.from('admin_settings').select('key, value').in('key', ['delivery_fee', 'free_delivery_above']);
+    const settings = {};
+    (data || []).forEach(row => { settings[row.key] = row.value; });
+    res.json({
+      deliveryFee: Number(settings.delivery_fee ?? 30),
+      freeAbove: Number(settings.free_delivery_above ?? 150),
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch delivery settings' });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
 
 // Auto-run if not deployed on Vercel's serverless platform

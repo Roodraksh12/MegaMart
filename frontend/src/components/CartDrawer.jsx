@@ -150,17 +150,7 @@ export default function CartDrawer() {
                   </div>
                 </div>
 
-                {/* Promo Code Input */}
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    placeholder="Have a coupon code?" 
-                    className="w-full bg-background border border-gray-200 rounded-lg py-2.5 pl-4 pr-20 text-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                  />
-                  <button className="absolute right-1 top-1 text-xs font-bold text-primary bg-primary/10 hover:bg-primary/20 transition-colors px-3 py-1.5 rounded-md">
-                    Apply
-                  </button>
-                </div>
+
 
                 <div className="flex space-x-3">
                   <button 

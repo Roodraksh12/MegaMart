@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, Truck, Banknote, ChevronRight, PackageCheck } from 'lucide-react';
+import { CheckCircle, Truck, Banknote, ChevronRight, PackageCheck, Tag, X } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
 
@@ -22,7 +22,24 @@ export default function Checkout() {
   const [paymentMethod, setPaymentMethod] = useState('cod');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const total = getCartTotal();
+  // Delivery fee settings from backend
+  const [deliveryConfig, setDeliveryConfig] = useState({ deliveryFee: 30, freeAbove: 150 });
+  useEffect(() => {
+    fetch(`${API_URL}/api/settings/delivery`)
+      .then(r => r.json())
+      .then(d => { if (d.deliveryFee !== undefined) setDeliveryConfig(d); })
+      .catch(() => {});
+  }, []);
+
+  // Promo code state
+  const [promoInput, setPromoInput] = useState('');
+  const [promoStatus, setPromoStatus] = useState(null); // null | { valid, code, discount, error }
+  const [promoLoading, setPromoLoading] = useState(false);
+
+  const subtotal = getCartTotal();
+  const deliveryFee = subtotal >= deliveryConfig.freeAbove ? 0 : deliveryConfig.deliveryFee;
+  const promoDiscount = promoStatus?.valid ? promoStatus.discount : 0;
+  const total = subtotal + deliveryFee - promoDiscount;
 
   // If not logged in and cart not empty, show auth required or just let them checkout as guest?
   // Let's enforce login for checkout just like regular apps
@@ -46,6 +63,23 @@ export default function Checkout() {
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
+  const handleApplyPromo = async () => {
+    if (!promoInput.trim()) return;
+    setPromoLoading(true);
+    setPromoStatus(null);
+    try {
+      const res = await fetch(`${API_URL}/api/promo/validate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoInput.trim(), orderTotal: subtotal })
+      });
+      const data = await res.json();
+      if (res.ok) setPromoStatus({ valid: true, code: data.code, discount: data.discount, discountValue: data.discountValue, discountType: data.discountType });
+      else setPromoStatus({ valid: false, error: data.error });
+    } catch { setPromoStatus({ valid: false, error: 'Network error' }); }
+    setPromoLoading(false);
+  };
+
   const handlePlaceOrder = async () => {
     setIsProcessing(true);
     try {
@@ -57,8 +91,9 @@ export default function Checkout() {
         },
         body: JSON.stringify({
           userId: user.id,
-          total: total + 15, // including taxes
+          total,
           address,
+          promoCode: promoStatus?.valid ? promoStatus.code : null,
           items: cart.map(item => ({ id: item.id, quantity: item.quantity, price: item.price }))
         })
       });
@@ -194,14 +229,58 @@ export default function Checkout() {
 
             <div className="flex justify-end space-y-2 flex-col items-end pt-4">
                <div className="flex justify-between w-full max-w-xs text-sm text-text-muted">
-                 <span>Subtotal</span><span>₹{total.toFixed(2)}</span>
+                 <span>Subtotal</span><span>₹{subtotal.toFixed(2)}</span>
                </div>
                <div className="flex justify-between w-full max-w-xs text-sm text-text-muted">
-                 <span>Taxes & Fees</span><span>₹15.00</span>
+                 <span>Delivery</span>
+                 <span className={deliveryFee === 0 ? 'text-green-600 font-medium' : ''}>
+                   {deliveryFee === 0 ? 'FREE 🎉' : `₹${deliveryFee}`}
+                 </span>
                </div>
+               {deliveryFee > 0 && (
+                 <p className="text-xs text-gray-400 w-full max-w-xs text-right">Add ₹{(deliveryConfig.freeAbove - subtotal).toFixed(0)} more for free delivery</p>
+               )}
+               {promoStatus?.valid && (
+                 <div className="flex justify-between w-full max-w-xs text-sm text-green-600">
+                   <span className="flex items-center gap-1"><Tag size={12} /> {promoStatus.code}</span>
+                   <span>- ₹{promoStatus.discount}</span>
+                 </div>
+               )}
                <div className="flex justify-between w-full max-w-xs text-xl font-bold mt-2 pt-2 border-t border-gray-200">
-                 <span>Total</span><span className="text-primary">₹{(total + 15).toFixed(2)}</span>
+                 <span>Total</span><span className="text-primary">₹{total.toFixed(2)}</span>
                </div>
+            </div>
+
+            {/* Promo Code */}
+            <div className="pt-4 border-t border-dashed border-gray-100 mt-2">
+              <label className="block text-sm font-medium text-gray-600 mb-2">Have a promo code?</label>
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Tag size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    value={promoInput}
+                    onChange={e => { setPromoInput(e.target.value.toUpperCase()); setPromoStatus(null); }}
+                    placeholder="e.g. SUPER10"
+                    className="w-full border border-gray-200 rounded-lg py-2.5 pl-9 pr-4 text-sm font-mono uppercase focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+                {promoStatus?.valid ? (
+                  <button type="button" onClick={() => { setPromoStatus(null); setPromoInput(''); }} className="px-4 py-2 text-xs font-bold text-red-500 border border-red-200 rounded-lg hover:bg-red-50 transition-colors flex items-center gap-1">
+                    <X size={13} /> Remove
+                  </button>
+                ) : (
+                  <button type="button" onClick={handleApplyPromo} disabled={promoLoading || !promoInput.trim()} className="px-4 py-2 text-xs font-bold text-primary border border-primary/30 bg-primary/5 rounded-lg hover:bg-primary/10 transition-colors disabled:opacity-50">
+                    {promoLoading ? '...' : 'Apply'}
+                  </button>
+                )}
+              </div>
+              {promoStatus && !promoStatus.valid && (
+                <p className="text-xs text-red-500 mt-1.5">{promoStatus.error}</p>
+              )}
+              {promoStatus?.valid && (
+                <p className="text-xs text-green-600 mt-1.5 font-medium">✅ {promoStatus.discountType === 'percent' ? `${promoStatus.discountValue}%` : `₹${promoStatus.discountValue}`} discount applied!</p>
+              )}
             </div>
 
             <div className="mt-8 flex justify-between">
@@ -238,7 +317,7 @@ export default function Checkout() {
                   isProcessing && "opacity-70 cursor-wait"
                 )}
               >
-                {isProcessing ? 'Processing...' : `Confirm Order ₹${(total + 15).toFixed(2)}`}
+                {isProcessing ? 'Processing...' : `Confirm Order ₹${total.toFixed(2)}`}
               </button>
             </div>
           </div>
@@ -309,15 +388,21 @@ export default function Checkout() {
               <div className="space-y-1 text-sm border-t border-gray-200 pt-3">
                 <div className="flex justify-between text-gray-500">
                   <span>Subtotal</span>
-                  <span>₹{total.toFixed(2)}</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-gray-500">
-                  <span>Delivery & Taxes</span>
-                  <span>₹15.00</span>
+                  <span>Delivery</span>
+                  <span className={deliveryFee === 0 ? 'text-green-600 font-medium' : ''}>{deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}</span>
                 </div>
+                {promoStatus?.valid && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Promo ({promoStatus.code})</span>
+                    <span>- ₹{promoStatus.discount}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-bold text-base pt-1 border-t border-gray-200 mt-1">
                   <span>Grand Total</span>
-                  <span className="text-primary">₹{(total + 15).toFixed(2)}</span>
+                  <span className="text-primary">₹{total.toFixed(2)}</span>
                 </div>
               </div>
 
