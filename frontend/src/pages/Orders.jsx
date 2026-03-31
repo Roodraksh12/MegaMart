@@ -196,6 +196,74 @@ function InvoiceModal({ order, onClose }) {
   );
 }
 
+// ─── Order Timeline ───────────────────────────────────────────────────────────
+const TIMELINE_STEPS = [
+  { key: 'Placed',           label: 'Placed',       icon: '📋' },
+  { key: 'Processing',       label: 'Confirmed',    icon: '✅' },
+  { key: 'Out for Delivery', label: 'On the Way',   icon: '🚴' },
+  { key: 'Delivered',        label: 'Delivered',    icon: '🎉' },
+];
+
+const STATUS_INDEX = {
+  'Processing': 1,
+  'Out for Delivery': 2,
+  'Delivered': 3,
+  'Cancelled': -1,
+};
+
+function OrderTimeline({ status }) {
+  if (status === 'Cancelled') {
+    return (
+      <div className="flex items-center gap-2 py-2 px-3 bg-red-50 rounded-xl border border-red-100">
+        <span className="text-lg">❌</span>
+        <p className="text-sm font-semibold text-red-600">Order Cancelled</p>
+      </div>
+    );
+  }
+
+  // Orders always start at "Placed" (index 0); further progress based on status
+  const currentStep = STATUS_INDEX[status] ?? 1;
+
+  return (
+    <div className="relative flex items-center justify-between py-2">
+      {/* connector bar behind the dots */}
+      <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-gray-200 rounded-full mx-6 z-0" />
+      <div
+        className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-green-500 rounded-full z-0 transition-all duration-700 mx-6"
+        style={{ width: `${(currentStep / (TIMELINE_STEPS.length - 1)) * 100}%` }}
+      />
+
+      {TIMELINE_STEPS.map((step, i) => {
+        const done = i <= currentStep;
+        const active = i === currentStep;
+        return (
+          <div key={step.key} className="relative z-10 flex flex-col items-center gap-1 min-w-[52px]">
+            <div className={cn(
+              'w-9 h-9 rounded-full flex items-center justify-center text-base border-2 transition-all duration-500',
+              done
+                ? 'bg-green-500 border-green-500 shadow-md shadow-green-200'
+                : 'bg-white border-gray-200',
+              active && 'ring-4 ring-green-100'
+            )}>
+              {done ? (
+                <span className="text-sm">{step.icon}</span>
+              ) : (
+                <span className="w-2 h-2 bg-gray-300 rounded-full" />
+              )}
+            </div>
+            <span className={cn(
+              'text-[10px] font-semibold text-center leading-tight',
+              done ? 'text-green-700' : 'text-gray-400'
+            )}>
+              {step.label}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // ─── Single Order Card ────────────────────────────────────────────────────────
 function OrderCard({ order }) {
   const cancelSecondsLeft = useCancelTimer(order.date);
@@ -246,6 +314,9 @@ function OrderCard({ order }) {
               <p className="font-bold text-lg mt-1">₹{order.total.toFixed(2)}</p>
             </div>
           </div>
+
+          {/* Tracking Timeline */}
+          <OrderTimeline status={order.status} />
 
           {/* Item Thumbnails */}
           <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
@@ -299,6 +370,7 @@ function OrderCard({ order }) {
     </>
   );
 }
+
 
 function ReorderButton({ items }) {
   const { addToCart, toggleCart } = useStore();
