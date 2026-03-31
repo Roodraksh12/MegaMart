@@ -338,13 +338,18 @@ export function Orders() {
       </div>
 
       {orders.length === 0 ? (
-        <div className="text-center py-16 space-y-4">
-          <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto opacity-50 mb-4">
-            <Package size={48} className="text-gray-400" />
-          </div>
-          <h2 className="text-2xl font-medium">No past orders</h2>
-          <p className="text-text-muted">You haven't placed any orders yet.</p>
-          <button onClick={() => navigate('/')} className="btn-primary mt-4">Start Shopping</button>
+        <div className="text-center py-20">
+          <div className="text-7xl mb-6 select-none">📦</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">No orders yet</h2>
+          <p className="text-gray-400 text-sm mb-8 max-w-xs mx-auto">
+            Looks like you haven't placed any orders.<br />Start shopping to see them here!
+          </p>
+          <button
+            onClick={() => navigate('/')}
+            className="btn-primary px-8 py-3 rounded-xl text-base"
+          >
+            🛒 Start Shopping
+          </button>
         </div>
       ) : (
         <div className="space-y-6">
@@ -376,10 +381,18 @@ export function Wishlist() {
       <h1 className="text-3xl font-display font-bold mb-2">Come Back Wishlist</h1>
       <p className="text-text-muted mb-8">Save items for your next basket here.</p>
       {wishlistProducts.length === 0 ? (
-        <div className="text-center py-20 bg-surface rounded-2xl border border-gray-200">
-          <h3 className="text-xl font-medium text-text-muted">Your wishlist is lonely.</h3>
-          <p className="text-sm text-gray-400 mt-2">Tap the heart icon on any product to save it here.</p>
-          <button onClick={() => navigate('/')} className="mt-6 btn-outline">Explore Products</button>
+        <div className="text-center py-20">
+          <div className="text-7xl mb-6 select-none">🩷</div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Your wishlist is empty</h2>
+          <p className="text-gray-400 text-sm mb-8 max-w-xs mx-auto">
+            Tap the ♡ heart icon on any product to save it here for later.
+          </p>
+          <button
+            onClick={() => navigate('/')}
+            className="btn-outline px-8 py-3 rounded-xl text-base"
+          >
+            Explore Products
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">

@@ -36,7 +36,8 @@ export const useStore = create(
           }
           const product = get().products.find(p => p.id === productId);
           if (!product) return state;
-          
+          // Fire a toast notification
+          get().addToast({ message: `${product.name} added to cart`, type: 'success' });
           return { cart: [...state.cart, { ...product, quantity }] };
         });
       },
@@ -95,6 +96,16 @@ export const useStore = create(
       isAuthOpen: false,
       toggleAuth: () => set((state) => ({ isAuthOpen: !state.isAuthOpen })),
       setAuthOpen: (isOpen) => set({ isAuthOpen: isOpen }),
+
+      // Toast State
+      toasts: [],
+      addToast: ({ message, type = 'info', duration = 2800 }) => {
+        const id = Date.now() + Math.random();
+        set((state) => ({ toasts: [...state.toasts, { id, message, type, duration }] }));
+      },
+      removeToast: (id) => {
+        set((state) => ({ toasts: state.toasts.filter(t => t.id !== id) }));
+      },
 
       // User State
       user: null,
