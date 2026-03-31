@@ -85,7 +85,7 @@ export default function CartDrawer() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 0.5 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black z-50"
+            className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50"
             onClick={toggleCart}
           />
           
@@ -95,7 +95,7 @@ export default function CartDrawer() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-background shadow-2xl z-50 flex flex-col"
+            className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white/95 backdrop-blur-xl shadow-2xl z-50 flex flex-col"
           >
             {/* Header */}
             <div className="p-4 border-b border-gray-200 flex justify-between items-center bg-surface">
@@ -164,8 +164,8 @@ export default function CartDrawer() {
                 </div>
               ) : (
                 cart.map((item) => (
-                  <div key={item.id} className="flex gap-4 p-3 bg-surface rounded-xl border border-gray-100 shadow-sm">
-                    <Link to={`/product/${item.id}`} onClick={toggleCart} className="w-16 h-16 flex items-center justify-center bg-background rounded-lg text-4xl flex-shrink-0">
+                  <div key={item.id} className="flex gap-4 p-3 bg-white/80 rounded-2xl border border-gray-100/50 shadow-soft backdrop-blur-sm">
+                    <Link to={`/product/${item.id}`} onClick={toggleCart} className="w-16 h-16 flex items-center justify-center bg-gray-50 rounded-xl text-4xl flex-shrink-0">
                       {item.image?.startsWith('http')
                         ? <img src={item.image} alt={item.name} className="w-full h-full object-contain rounded-lg" />
                         : item.image}
@@ -192,7 +192,7 @@ export default function CartDrawer() {
                           )}
                         </div>
                         
-                        <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden bg-background">
+                        <div className="flex items-center border border-gray-200 rounded-full overflow-hidden bg-white shadow-sm">
                           <button 
                             className="px-2 py-1 flex items-center justify-center hover:bg-gray-200 transition-colors"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
@@ -243,13 +243,13 @@ export default function CartDrawer() {
                           value={promoCode}
                           onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); setPromoStatus(null); }}
                           onKeyDown={e => e.key === 'Enter' && applyPromo()}
-                          className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/30 bg-white"
+                          className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/30 bg-gray-50 focus:bg-white transition-all"
                         />
                       </div>
                       <button
                         onClick={applyPromo}
                         disabled={promoStatus === 'loading' || !promoCode.trim()}
-                        className="px-3 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50 flex items-center gap-1"
+                        className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-full hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center gap-1 active:scale-95 shadow-soft"
                       >
                         {promoStatus === 'loading' ? <Loader size={14} className="animate-spin" /> : 'Apply'}
                       </button>

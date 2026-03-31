@@ -8,16 +8,20 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#0C831F',
-          dark: '#096618',
-          light: '#1aab31',
+          DEFAULT: '#10B981',
+          dark: '#059669',
+          light: '#34D399',
         },
-        background: '#F6F6F6',
+        background: '#F9FAFB',
         surface: '#FFFFFF',
         text: {
-          dark: '#1C1C1C',
+          dark: '#111827',
           muted: '#6B7280',
         }
+      },
+      boxShadow: {
+        'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+        'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.03)',
       },
       fontFamily: {
         sans: ['DM Sans', 'sans-serif'],

@@ -44,26 +44,29 @@ export default function Home() {
   return (
     <div className="pb-16">
 
-      {/* ── Hero Banner ── flat green, simple text, no decorative cards ── */}
-      <div className="bg-primary px-4 sm:px-6 lg:px-8 py-10 md:py-14">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-1.5 mb-3">
-            <Zap size={14} className="text-green-200 fill-green-200" />
-            <p className="text-sm font-medium text-green-200">Delivered in 30 minutes</p>
+      {/* ── Hero Banner ── */}
+      <div className="bg-gradient-to-br from-[#E8F8EE] via-[#F4FCF7] to-white px-4 sm:px-6 lg:px-8 py-12 md:py-16 md:mt-2 lg:mt-4 md:rounded-3xl max-w-[96%] mx-auto overflow-hidden relative">
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="flex items-center gap-1.5 mb-4 w-fit px-3 py-1 bg-white border border-green-100 rounded-full shadow-sm">
+            <Zap size={14} className="text-primary fill-primary" />
+            <p className="text-xs font-semibold text-primary">Delivered in 30 minutes</p>
           </div>
-          <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight mb-4">
-            Fresh groceries,<br />at your door.
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-text-dark leading-tight mb-5 tracking-tight">
+            Fresh groceries,<br />
+            <span className="text-primary font-bold">at your door.</span>
           </h1>
-          <p className="text-green-100 text-sm md:text-base mb-7 max-w-md">
-            Vegetables, dairy, bakery and daily essentials — delivered fresh.
+          <p className="text-text-muted text-sm md:text-base mb-8 max-w-md leading-relaxed">
+            Vegetables, dairy, bakery and daily essentials — delivered fresh directly from our store to your home.
           </p>
           <button
             onClick={() => document.getElementById('shop-section').scrollIntoView({ behavior: 'smooth' })}
-            className="inline-flex items-center gap-2 bg-white text-primary font-semibold px-5 py-2.5 rounded-md hover:bg-green-50 transition-colors text-sm"
+            className="inline-flex items-center gap-2 bg-primary text-white font-semibold px-6 py-3 rounded-full hover:bg-primary-dark transition-all text-sm shadow-soft hover:shadow-lg active:scale-95"
           >
             Shop Now <ChevronRight size={16} />
           </button>
         </div>
+        {/* Soft decorative blur circle */}
+        <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/10 rounded-full blur-[80px] z-0 pointer-events-none" />
       </div>
 
       {/* ── Category Pills ── */}
@@ -74,10 +77,10 @@ export default function Home() {
               key={category.id}
               onClick={() => setActiveCategory(category.id)}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-full whitespace-nowrap text-sm border transition-colors flex-shrink-0',
+                'flex items-center gap-1.5 px-4 py-2 rounded-full whitespace-nowrap text-sm font-medium transition-all flex-shrink-0 cursor-pointer',
                 activeCategory === category.id
-                  ? 'bg-primary text-white border-primary'
-                  : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+                  ? 'bg-text-dark text-white border-transparent shadow-md'
+                  : 'bg-white text-gray-500 border border-gray-100 hover:bg-gray-50 hover:text-text-dark'
               )}
             >
               <span>{category.icon}</span>
@@ -123,21 +126,21 @@ export default function Home() {
             <h2 className="font-semibold text-base text-gray-900">Quick Baskets</h2>
             <span className="text-xs text-gray-400 ml-1">· 1-click bundles</span>
           </div>
-          <div className="flex flex-col divide-y divide-gray-100 border border-gray-200 rounded-lg overflow-hidden bg-white">
+            <div className="flex flex-col gap-3">
             {QUICK_BASKETS.map(basket => (
-              <div key={basket.id} className="flex items-center justify-between px-4 py-3 gap-4 hover:bg-gray-50 transition-colors">
+              <div key={basket.id} className="flex items-center justify-between px-4 py-4 bg-white border border-gray-100/50 rounded-2xl shadow-sm hover:shadow-soft hover:border-gray-200 transition-all group">
                 <div>
-                  <h3 className="font-semibold text-sm text-gray-900">{basket.name}</h3>
-                  <p className="text-xs text-gray-400 mt-0.5">{basket.items.length} items</p>
+                  <h3 className="font-semibold text-sm text-text-dark">{basket.name}</h3>
+                  <p className="text-xs text-text-muted mt-1 bg-gray-50 px-2 py-0.5 rounded inline-block">{basket.items.length} items</p>
                 </div>
-                <div className="flex items-center gap-4 flex-shrink-0">
-                  <div className="text-right">
-                    <span className="font-bold text-sm text-gray-900">₹{basket.price}</span>
-                    <p className="text-xs text-green-600 font-medium">Save ₹{basket.saving}</p>
+                <div className="flex items-center gap-5 flex-shrink-0">
+                  <div className="text-right flex flex-col items-end">
+                    <span className="font-bold text-sm text-text-dark">₹{basket.price}</span>
+                    <span className="text-[10px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">Save ₹{basket.saving}</span>
                   </div>
                   <button
                     onClick={() => { basket.items.forEach(id => addToCart(id, 1)); toggleCart(); }}
-                    className="bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded hover:bg-primary-dark transition-colors"
+                    className="bg-gray-900 border border-transparent text-white text-xs font-semibold px-4 py-2 rounded-full hover:bg-gray-800 transition-all active:scale-95 group-hover:shadow-md"
                   >
                     Add All
                   </button>

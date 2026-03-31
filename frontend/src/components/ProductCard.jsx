@@ -12,14 +12,14 @@ export default function ProductCard({ product }) {
   const isWishlisted = wishlist.includes(product.id);
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden flex flex-col h-full">
+    <div className="bg-white rounded-2xl border border-gray-100/50 shadow-soft overflow-hidden flex flex-col h-full transition-all hover:shadow-lg hover:-translate-y-1">
 
       {/* Clickable area: image + name → goes to product detail page */}
       <Link to={`/product/${product.id}`} className="block">
         {/* Image */}
         <div className="relative bg-gray-50 p-3 flex items-center justify-center" style={{ aspectRatio: '1' }}>
           {product.discount > 0 && (
-            <span className="absolute top-2 left-2 bg-green-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+            <span className="absolute top-2 left-2 bg-gradient-to-r from-green-500 to-green-600 shadow-sm text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md">
               {product.discount}% OFF
             </span>
           )}
@@ -66,23 +66,23 @@ export default function ProductCard({ product }) {
             onClick={() => addToCart(product.id, 1)}
             disabled={!product.inStock}
             className={cn(
-              'bg-primary text-white text-xs font-semibold px-4 py-1 rounded hover:bg-primary-dark transition-colors',
-              !product.inStock && 'opacity-40 cursor-not-allowed bg-gray-300 hover:bg-gray-300'
+              'bg-primary text-white text-xs font-semibold px-4 py-1.5 rounded-full hover:bg-primary-dark hover:shadow-md active:scale-95 transition-all',
+              !product.inStock && 'opacity-40 cursor-not-allowed bg-gray-300 hover:bg-gray-300 hover:shadow-none'
             )}
           >
             Add
           </button>
         ) : (
-          <div className="flex items-center border border-primary rounded overflow-hidden">
+          <div className="flex items-center border border-primary rounded-full overflow-hidden bg-white shadow-sm">
             <button
-              className="px-2 py-1 text-primary hover:bg-primary hover:text-white transition-colors"
+              className="px-2 py-1.5 text-primary hover:bg-primary hover:text-white transition-colors"
               onClick={() => updateQuantity(product.id, quantity - 1)}
             >
               <Minus size={12} />
             </button>
             <span className="px-2 text-xs font-bold text-primary">{quantity}</span>
             <button
-              className="px-2 py-1 text-primary hover:bg-primary hover:text-white transition-colors"
+              className="px-2 py-1.5 text-primary hover:bg-primary hover:text-white transition-colors"
               onClick={() => updateQuantity(product.id, quantity + 1)}
             >
               <Plus size={12} />

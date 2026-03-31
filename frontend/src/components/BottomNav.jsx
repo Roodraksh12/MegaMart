@@ -19,8 +19,8 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-gray-200 safe-area-inset-bottom">
-      <div className="flex items-center justify-around h-16 px-2">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-t border-gray-100 pt-1 pb-[max(env(safe-area-inset-bottom),0px)]">
+      <div className="flex items-center justify-around h-[60px] px-2">
         {links.map(({ to, icon: Icon, label }) => {
           const active = location.pathname === to;
           return (
