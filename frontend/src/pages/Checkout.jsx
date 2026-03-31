@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, Truck, Banknote, ChevronRight, PackageCheck, Tag, X } from 'lucide-react';
+import { CheckCircle, Truck, Banknote, ChevronRight, PackageCheck, Tag, X, CreditCard } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 export default function Checkout() {
   const { cart, getCartTotal, clearCart, user, toggleAuth, addOrder } = useStore();
@@ -60,8 +62,6 @@ export default function Checkout() {
       </div>
     );
   }
-
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   const handleApplyPromo = async () => {
     if (!promoInput.trim()) return;
