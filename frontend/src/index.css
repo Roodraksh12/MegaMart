@@ -4,37 +4,32 @@
 
 @layer base {
   body {
-    @apply text-text-dark font-sans antialiased selection:bg-primary/20 selection:text-primary;
-    background-color: #f8fafc;
-    background-image: 
-      radial-gradient(at 80% 0%, rgba(226, 232, 240, 0.4) 0px, transparent 40%),
-      radial-gradient(at 20% 100%, rgba(241, 245, 249, 0.6) 0px, transparent 40%),
-      radial-gradient(at 50% 50%, rgba(255, 255, 255, 0.8) 0px, transparent 80%);
-    background-attachment: fixed;
-    background-size: cover;
+    @apply text-black font-sans antialiased selection:bg-black selection:text-white bg-white;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-gradient-to-b from-primary to-black text-white px-6 py-2.5 rounded-full font-medium transition-all hover:shadow-lg hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed border border-white/10;
+    @apply bg-black text-white px-6 py-3 text-[11px] font-bold uppercase tracking-widest transition-colors hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
   .btn-secondary {
-    @apply bg-white/40 backdrop-blur-md text-text-dark px-6 py-2.5 rounded-full font-medium border border-white/60 shadow-sm transition-all hover:bg-white/60 hover:shadow-glass hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-transparent text-black px-6 py-3 text-[11px] font-bold uppercase tracking-widest border border-black transition-colors hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
   .btn-outline {
-    @apply border border-primary text-primary px-6 py-2.5 rounded-full font-medium transition-all hover:bg-primary hover:text-white hover:shadow-glass disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply border-b-2 border-black text-black pb-1 text-[11px] font-bold uppercase tracking-widest transition-colors hover:text-gray-500 hover:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
+  /* The card is dead; products float on the canvas */
   .card {
-    @apply bg-white/40 backdrop-blur-2xl rounded-3xl border border-white/60 shadow-soft overflow-hidden transition-all hover:shadow-glass hover:bg-white/50;
+    @apply bg-transparent border-none shadow-none;
   }
 }
 
+/* Remove glass utilities */
 .bg-glass {
-  @apply bg-white/50 backdrop-blur-2xl border border-white/40 shadow-glass;
+  @apply bg-transparent;
 }
 
 /* Hide scrollbar utility */

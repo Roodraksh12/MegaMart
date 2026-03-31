@@ -95,15 +95,15 @@ export default function CartDrawer() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white/40 backdrop-blur-3xl border-l border-white/60 shadow-[-20px_0_60px_rgba(0,0,0,0.05)] z-50 flex flex-col"
+            className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white border-l border-black/10 z-50 flex flex-col"
           >
             {/* Header */}
-            <div className="p-4 border-b border-white/20 flex justify-between items-center bg-white/20">
+            <div className="p-6 border-b border-black flex justify-between items-center bg-white">
               <div className="flex items-center gap-2">
-                <ShoppingBag className="text-black" />
-                <h2 className="font-display font-bold text-xl text-black">My Cart</h2>
-                <span className="bg-black text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
-                  {cart.length} items
+                <ShoppingBag className="text-black" size={20} />
+                <h2 className="font-bold text-[13px] uppercase tracking-widest text-black">Bag</h2>
+                <span className="text-black text-[13px] font-bold">
+                  ({cart.length})
                 </span>
               </div>
               <button 
@@ -126,20 +126,20 @@ export default function CartDrawer() {
 
             {/* Delivery progress bar */}
             {cart.length > 0 && (
-              <div className="px-4 py-3 bg-white/30 border-b border-white/20">
+              <div className="px-6 py-4 bg-gray-50 border-b border-black/10">
                 {isDeliveryFree ? (
                   <div className="flex items-center gap-2 text-black">
                     <CheckCircle size={15} className="flex-shrink-0" />
-                    <p className="text-xs font-bold">🎊 You've unlocked FREE delivery!</p>
+                    <p className="text-[11px] font-bold uppercase tracking-widest">Free Delivery Unlocked</p>
                   </div>
                 ) : (
-                  <p className="text-xs text-text-dark mb-1.5 font-medium">
-                    Add <span className="font-bold text-black">₹{amountToFreeDelivery}</span> more for <span className="font-bold text-black">FREE delivery</span>
+                  <p className="text-[11px] text-gray-500 mb-2 font-bold uppercase tracking-widest">
+                    Add <span className="text-black">₹{amountToFreeDelivery}</span> for <span className="text-black">Free Delivery</span>
                   </p>
                 )}
-                <div className="h-1 bg-white/50 rounded-full overflow-hidden mt-1 shadow-inner">
+                <div className="h-0.5 bg-gray-200 w-full mt-2">
                   <motion.div
-                    className="h-full bg-black rounded-full"
+                    className="h-full bg-black"
                     initial={{ width: 0 }}
                     animate={{ width: `${progressPercent}%` }}
                     transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -164,8 +164,8 @@ export default function CartDrawer() {
                 </div>
               ) : (
                 cart.map((item) => (
-                  <div key={item.id} className="flex gap-4 p-3 bg-white/40 rounded-3xl border border-white/50 shadow-glass backdrop-blur-md">
-                    <Link to={`/product/${item.id}`} onClick={toggleCart} className="w-16 h-16 flex items-center justify-center bg-white/40 rounded-2xl text-4xl flex-shrink-0 border border-white/30">
+                  <div key={item.id} className="flex gap-4 p-4 bg-white border-b border-black/5">
+                    <Link to={`/product/${item.id}`} onClick={toggleCart} className="w-20 h-24 flex items-center justify-center bg-[#FAFAFA] flex-shrink-0 mix-blend-multiply">
                       {item.image?.startsWith('http')
                         ? <img src={item.image} alt={item.name} className="w-full h-full object-contain rounded-lg" />
                         : item.image}
@@ -192,21 +192,21 @@ export default function CartDrawer() {
                           )}
                         </div>
                         
-                        <div className="flex items-center border border-black/10 rounded-full overflow-hidden bg-black/5 shadow-inner">
+                        <div className="flex items-center gap-3">
                           <button 
-                            className="px-2 py-1.5 flex items-center justify-center hover:bg-black hover:text-white transition-all font-bold"
+                            className="text-black hover:text-gray-500 transition-colors"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           >
-                            <Minus size={12} strokeWidth={3} />
+                            <Minus size={14} strokeWidth={2} />
                           </button>
-                          <span className="px-3 py-1 font-bold text-sm w-8 text-center bg-transparent">
+                          <span className="text-[12px] font-bold text-black w-4 text-center">
                             {item.quantity}
                           </span>
                           <button 
-                            className="px-2 py-1.5 flex items-center justify-center hover:bg-black hover:text-white transition-all font-bold"
+                            className="text-black hover:text-gray-500 transition-colors"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           >
-                            <Plus size={12} strokeWidth={3} />
+                            <Plus size={14} strokeWidth={2} />
                           </button>
                         </div>
                       </div>
@@ -218,7 +218,7 @@ export default function CartDrawer() {
 
             {/* Footer / Checkout */}
             {cart.length > 0 && (
-              <div className="border-t border-white/30 bg-white/30 backdrop-blur-xl p-4 space-y-3 shadow-[0_-10px_30px_-5px_rgba(0,0,0,0.05)]">
+              <div className="border-t-2 border-black bg-white p-6 space-y-4">
 
                 {/* Promo Code Input */}
                 <div>

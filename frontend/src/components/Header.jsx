@@ -38,13 +38,13 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/30 backdrop-blur-2xl border-b border-white/50 transition-all shadow-sm">
+    <header className="sticky top-0 z-40 bg-white border-b border-black/10 transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center h-16 gap-4">
+        <div className="flex items-center h-[72px] gap-6">
 
           {/* Logo */}
           <Link to="/" className="flex-shrink-0">
-            <span className="font-bold text-xl text-primary tracking-tight">SuperMart</span>
+            <span className="font-black text-2xl text-black tracking-tighter uppercase italic pr-2">SUPERMART</span>
           </Link>
 
           {/* Search — desktop only */}
@@ -54,8 +54,8 @@ export default function Header() {
                 <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search groceries..."
-                  className="w-full bg-white/40 border border-white/60 rounded-full py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:bg-white/60 focus:border-white shadow-soft transition-all placeholder:text-gray-400"
+                  placeholder="Search for essentials..."
+                  className="w-full bg-transparent border-b-2 border-black/20 rounded-none py-2 pl-9 pr-4 text-sm font-semibold focus:outline-none focus:border-black transition-colors placeholder:text-gray-300 placeholder:font-normal"
                   value={searchQuery}
                   onChange={handleSearch}
                   onBlur={() => setTimeout(() => setIsSearchOpen(false), 200)}
@@ -93,22 +93,22 @@ export default function Header() {
               {/* Search icon — mobile only */}
               <button
                 id="mobile-search-toggle"
-                className="md:hidden p-2 text-gray-500 hover:text-primary transition-colors rounded-md hover:bg-gray-100"
+                className="md:hidden p-2 text-black hover:text-gray-500 transition-colors"
                 onClick={() => setMobileSearchVisible(v => !v)}
                 aria-label="Toggle search"
               >
                 <Search size={20} />
               </button>
 
-              <Link to="/wishlist" className="hidden sm:flex p-2 text-gray-500 hover:text-primary transition-colors rounded-md hover:bg-gray-100">
+              <Link to="/wishlist" className="hidden sm:flex p-2 text-black hover:text-gray-500 transition-colors">
                 <Heart size={20} />
               </Link>
 
               {user ? (
                 <div className="relative group">
-                  <button className="flex items-center gap-1.5 p-2 text-gray-600 hover:text-primary transition-colors rounded-md hover:bg-gray-100">
+                  <button className="flex items-center gap-1.5 p-2 text-black hover:text-gray-500 transition-colors">
                     <User size={20} />
-                    <span className="hidden md:block text-sm font-medium">{user.name.split(' ')[0]}</span>
+                    <span className="hidden md:block text-[11px] font-bold uppercase tracking-widest">{user.name.split(' ')[0]}</span>
                   </button>
                   <div className="absolute top-full right-0 mt-1 w-44 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-50">
                     <Link to="/orders" className="block px-4 py-2.5 text-sm hover:bg-gray-50 text-text-dark">My Orders</Link>
@@ -125,24 +125,21 @@ export default function Header() {
               ) : (
                 <button
                   onClick={toggleAuth}
-                  className="flex items-center gap-1.5 p-2 text-gray-600 hover:text-primary transition-colors rounded-md hover:bg-gray-100"
+                  className="flex items-center gap-1.5 p-2 text-black hover:text-gray-500 transition-colors"
                 >
                   <User size={20} />
-                  <span className="hidden md:block text-sm font-medium">Sign In</span>
+                  <span className="hidden md:block text-[11px] font-bold uppercase tracking-widest">Sign In</span>
                 </button>
               )}
 
               <button
                 onClick={toggleCart}
-                className="relative flex items-center gap-1.5 bg-black text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-gray-900 hover:shadow-glass hover:-translate-y-0.5 transition-all active:scale-95 border border-white/10"
+                className="relative flex items-center gap-2 text-black hover:text-gray-500 transition-colors uppercase text-[11px] font-bold tracking-widest pl-2"
               >
-                <ShoppingCart size={18} />
                 <span className="hidden sm:block">Cart</span>
-                {cartItemCount > 0 && (
-                  <span className="bg-white text-primary text-[10px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                    {cartItemCount > 9 ? '9+' : cartItemCount}
-                  </span>
-                )}
+                <span className="bg-black text-white w-5 h-5 flex items-center justify-center text-[10px] font-bold rounded-full">
+                  {cartItemCount > 9 ? '9+' : cartItemCount}
+                </span>
               </button>
             </div>
           )}
@@ -157,8 +154,8 @@ export default function Header() {
             <input
               autoFocus
               type="text"
-              placeholder="Search groceries..."
-              className="w-full bg-white/40 border border-white/60 rounded-full py-2.5 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-black/10 focus:bg-white/60 focus:border-white shadow-soft transition-all placeholder:text-gray-400"
+              placeholder="Search for essentials..."
+              className="w-full bg-transparent border-b-2 border-black/20 rounded-none py-2 pl-9 pr-4 text-sm font-semibold focus:outline-none focus:border-black transition-colors placeholder:text-gray-300 placeholder:font-normal"
               value={searchQuery}
               onChange={handleSearch}
               onBlur={() => setTimeout(() => setIsSearchOpen(false), 200)}

@@ -44,58 +44,57 @@ export default function Home() {
   return (
     <div className="pb-16">
 
-      {/* ── Hero Banner ── */}
-      <div className="bg-white/30 backdrop-blur-2xl border border-white/60 shadow-glass px-4 sm:px-6 lg:px-8 py-12 md:py-16 md:mt-4 lg:mt-6 md:rounded-[2rem] max-w-[96%] mx-auto overflow-hidden relative">
-        <div className="max-w-7xl mx-auto relative z-10">
-          <div className="flex items-center gap-1.5 mb-5 w-fit px-3 py-1.5 bg-black/5 backdrop-blur-md border border-black/10 rounded-full shadow-inner">
-            <Zap size={14} className="text-black fill-black" />
-            <p className="text-xs font-bold text-black uppercase tracking-wider">Delivered in 30 minutes</p>
-          </div>
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-black leading-tight mb-5 tracking-tighter">
-            Fresh groceries.<br />
-            <span className="text-text-muted font-light">At your door.</span>
-          </h1>
-          <p className="text-text-muted text-sm md:text-lg mb-8 max-w-lg leading-relaxed font-medium">
-            Vegetables, dairy, bakery and daily essentials — delivered fresh directly from our store to your home.
+      {/* ── Editorial Hero ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20 md:pt-24 md:pb-32 border-b border-black/10">
+        <div className="flex items-center gap-2 mb-8">
+          <Zap size={12} className="text-black fill-black" />
+          <p className="text-[10px] font-bold text-black uppercase tracking-[0.2em]">30 Minute Delivery</p>
+        </div>
+        <h1 className="text-6xl md:text-8xl lg:text-9xl font-black text-black leading-[0.9] tracking-tighter mb-8 uppercase">
+          Fresh.<br />
+          <span className="text-gray-300">Fast.</span>
+        </h1>
+        <div className="max-w-xl flex flex-col sm:flex-row sm:items-center gap-6">
+          <p className="text-black text-sm md:text-lg leading-relaxed font-medium">
+            Essential groceries, artisanal bakery, and fresh dairy. Curated for you and delivered instantly.
           </p>
           <button
             onClick={() => document.getElementById('shop-section').scrollIntoView({ behavior: 'smooth' })}
-            className="btn-primary inline-flex items-center gap-2"
+            className="flex-shrink-0 bg-black text-white px-8 py-4 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-gray-800 transition-colors w-fit"
           >
-            Shop Now <ChevronRight size={16} />
+            Shop Now
           </button>
         </div>
-        {/* Soft decorative blur circle */}
-        <div className="absolute -bottom-24 -right-24 w-96 h-96 bg-white/40 rounded-full blur-[80px] z-0 pointer-events-none" />
       </div>
 
-      {/* ── Category Pills ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
-          {CATEGORIES.map(category => (
-            <button
-              key={category.id}
-              onClick={() => setActiveCategory(category.id)}
-              className={cn(
-                'flex items-center gap-1.5 px-4 py-2 rounded-full whitespace-nowrap text-sm font-semibold transition-all flex-shrink-0 cursor-pointer backdrop-blur-md',
-                activeCategory === category.id
-                  ? 'bg-black text-white border border-black shadow-lg shadow-black/20'
-                  : 'bg-white/40 text-text-muted border border-white/60 hover:bg-white/60 hover:text-black hover:shadow-glass'
-              )}
-            >
-              <span>{category.icon}</span>
-              <span>{category.name}</span>
-            </button>
-          ))}
+      {/* ── Stark Categories ── */}
+      <div className="border-b border-black/10 sticky top-[72px] z-30 bg-white/90 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex gap-8 overflow-x-auto hide-scrollbar">
+            {CATEGORIES.map(category => (
+              <button
+                key={category.id}
+                onClick={() => setActiveCategory(category.id)}
+                className={cn(
+                  'py-5 text-[11px] font-bold uppercase tracking-[0.15em] whitespace-nowrap transition-colors border-b-2',
+                  activeCategory === category.id
+                    ? 'text-black border-black border-b-2'
+                    : 'text-gray-400 border-transparent hover:text-black'
+                )}
+              >
+                {category.name}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* ── Fresh Picks ── */}
       {activeCategory === 'all' && (isProductsLoading || freshPicks.length > 0) && (
-        <div className="mt-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 mb-4">
-            <Star size={16} className="text-green-600 fill-green-600" />
-            <h2 className="font-semibold text-base text-gray-900">Fresh Picks Today</h2>
+        <div className="mt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center gap-2 mb-6 border-b border-black/10 pb-4">
+            <Star size={12} className="text-black fill-black" />
+            <h2 className="font-bold text-[11px] uppercase tracking-[0.2em] text-black">Fresh Picks Today</h2>
           </div>
           <div className="flex overflow-x-auto gap-3 pb-2 hide-scrollbar">
             {isProductsLoading
@@ -120,13 +119,15 @@ export default function Home() {
 
 
       {/* ── Main Product Grid ── */}
-      <section id="shop-section" className="mt-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="font-semibold text-base text-gray-900 mb-4">
-          {activeCategory === 'all' ? 'All Products' : CATEGORIES.find(c => c.id === activeCategory)?.name}
-          <span className="text-gray-400 font-normal text-sm ml-2">
-            {isProductsLoading ? '' : `(${filteredProducts.length} items)`}
+      <section id="shop-section" className="mt-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-end border-b border-black/10 pb-4 mb-8">
+          <h2 className="font-bold text-[11px] uppercase tracking-[0.2em] text-black">
+            {activeCategory === 'all' ? 'All Essentials' : CATEGORIES.find(c => c.id === activeCategory)?.name}
+          </h2>
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+            {isProductsLoading ? '' : `${filteredProducts.length} Items`}
           </span>
-        </h2>
+        </div>
 
         {isProductsLoading ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
