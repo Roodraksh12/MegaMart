@@ -241,6 +241,27 @@ app.post('/api/orders', async (req, res) => {
   res.json({ message: 'Order placed successfully', orderId });
 });
 
+// 5.4. Cancel an order (within 30 seconds)
+app.post('/api/orders/:id/cancel', async (req, res) => {
+  const orderId = req.params.id;
+  const { userId } = req.body;
+  if (!userId) return res.status(400).json({ error: 'User ID required' });
+
+  const { data: order } = await supabase.from('orders').select('*').eq('id', orderId).single();
+  if (!order || order.user_id !== userId) return res.status(403).json({ error: 'Unauthorized to cancel this order' });
+  
+  // Calculate buffer 35 seconds to allow network latency
+  const orderTime = new Date(order.created_at).getTime();
+  if (Date.now() - orderTime > 35000 && order.status !== 'Cancelled') {
+    return res.status(400).json({ error: 'Cancellation window expired' });
+  }
+
+  const { error } = await supabase.from('orders').update({ status: 'Cancelled' }).eq('id', orderId);
+  if (error) return res.status(500).json({ error: 'Failed to cancel order' });
+
+  res.json({ message: 'Order cancelled successfully' });
+});
+
 // 5.5. Fetch user orders
 app.get('/api/orders/user/:id', async (req, res) => {
   const userId = req.params.id;

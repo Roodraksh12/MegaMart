@@ -1,11 +1,320 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Package, Clock, HelpCircle, Repeat } from 'lucide-react';
+import { Package, Repeat, X, Printer, MapPin, CreditCard, Clock, XCircle } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import ProductCard from '../components/ProductCard';
+import { cn } from '../utils/cn';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+// ─── Print Invoice Styles (injected dynamically) ─────────────────────────────
+const PRINT_STYLES = `
+  @media print {
+    body > * { display: none !important; }
+    #invoice-print-target { display: block !important; }
+    #invoice-print-target { position: fixed; top: 0; left: 0; width: 100%; }
+  }
+`;
+
+// ─── 30-second Cancel Timer Hook ─────────────────────────────────────────────
+function useCancelTimer(orderDate) {
+  const [secondsLeft, setSecondsLeft] = useState(0);
+
+  useEffect(() => {
+    const orderMs = new Date(orderDate).getTime();
+    const update = () => {
+      const elapsed = (Date.now() - orderMs) / 1000;
+      const remaining = Math.max(0, 30 - Math.floor(elapsed));
+      setSecondsLeft(remaining);
+    };
+    update();
+    const interval = setInterval(update, 500);
+    return () => clearInterval(interval);
+  }, [orderDate]);
+
+  return secondsLeft;
+}
+
+// ─── Invoice Modal ────────────────────────────────────────────────────────────
+function InvoiceModal({ order, onClose }) {
+  const printRef = useRef(null);
+  let addr = {};
+  try { addr = JSON.parse(order.delivery_address); } catch(e) {}
+
+  const handlePrint = () => {
+    const printContent = printRef.current.innerHTML;
+    const win = window.open('', '_blank', 'width=800,height=600');
+    win.document.write(`
+      <html>
+        <head>
+          <title>Invoice - ${order.id}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 32px; color: #111; }
+            h1 { color: #22c55e; margin-bottom: 4px; }
+            .sub { color: #666; font-size: 13px; margin-bottom: 24px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+            th { background: #f4f4f5; text-align: left; padding: 8px 12px; font-size: 12px; text-transform: uppercase; color: #666; }
+            td { padding: 10px 12px; border-bottom: 1px solid #e4e4e7; font-size: 14px; }
+            .total-row td { font-weight: bold; background: #f0fdf4; color: #16a34a; }
+            .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+            .info-box h3 { font-size: 11px; text-transform: uppercase; color: #999; margin-bottom: 8px; }
+            .info-box p { font-size: 14px; margin: 2px 0; }
+            .badge { display: inline-block; background: #dcfce7; color: #16a34a; padding: 2px 10px; border-radius: 99px; font-size: 12px; font-weight: bold; }
+            .footer { margin-top: 32px; color: #999; font-size: 12px; text-align: center; }
+          </style>
+        </head>
+        <body>${printContent}</body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    win.print();
+    win.close();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Order Details</h2>
+            <p className="text-xs text-gray-400 font-mono">{order.id}</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handlePrint}
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+            >
+              <Printer size={15} /> Print Invoice
+            </button>
+            <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500">
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+
+        {/* Invoice Body — also used for print */}
+        <div ref={printRef} className="p-6 space-y-6">
+          {/* Header for print */}
+          <div className="hidden print:block">
+            <h1>🛒 SuperMart</h1>
+            <p className="sub">Tax Invoice / Receipt</p>
+          </div>
+
+          {/* Status & Date */}
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Placed on</p>
+              <p className="font-medium text-sm">
+                {new Date(order.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {' '}at{' '}
+                {new Date(order.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+            <span className={cn(
+              "px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider",
+              order.status === 'Processing' ? 'bg-orange-100 text-orange-700' :
+              order.status === 'Out for Delivery' ? 'bg-blue-100 text-blue-700' :
+              order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
+              order.status === 'Cancelled' ? 'bg-red-100 text-red-600' :
+              'bg-gray-100 text-gray-600'
+            )}>
+              {order.status}
+            </span>
+          </div>
+
+          {/* Delivery & Payment Info */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <MapPin size={14} className="text-primary" />
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Delivery Address</h3>
+              </div>
+              <p className="font-semibold text-sm">{addr.name || 'N/A'}</p>
+              <p className="text-sm text-gray-600">{addr.houseNo}, {addr.street}</p>
+              <p className="text-sm text-gray-600">Pincode: {addr.pincode}</p>
+              <p className="text-sm text-gray-600">📞 {addr.phone || order.customer_phone || 'N/A'}</p>
+              {addr.slot && (
+                <span className="inline-block mt-2 text-xs bg-primary/10 text-primary font-semibold px-2 py-0.5 rounded">
+                  🕐 Slot: {addr.slot}
+                </span>
+              )}
+            </div>
+            <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <CreditCard size={14} className="text-primary" />
+                <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Payment</h3>
+              </div>
+              <p className="font-semibold text-sm">{order.payment_method || 'Cash on Delivery'}</p>
+              <p className="text-xs text-gray-400 mt-1">Amount Payable</p>
+              <p className="text-2xl font-bold text-primary">₹{order.total.toFixed(2)}</p>
+            </div>
+          </div>
+
+          {/* Items Table */}
+          <div>
+            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Items Ordered</h3>
+            <div className="border border-gray-100 rounded-xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-50 border-b border-gray-100">
+                    <th className="text-left px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Item</th>
+                    <th className="text-center px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Qty</th>
+                    <th className="text-right px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Price</th>
+                    <th className="text-right px-4 py-3 font-semibold text-gray-500 text-xs uppercase">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {order.items.map((item, i) => (
+                    <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50">
+                      <td className="px-4 py-3">
+                        <span className="mr-2">{!item.image?.startsWith('http') ? item.image : '📦'}</span>
+                        <span className="font-medium">{item.name}</span>
+                      </td>
+                      <td className="px-4 py-3 text-center text-gray-500">×{item.quantity}</td>
+                      <td className="px-4 py-3 text-right text-gray-600">₹{Number(item.price).toFixed(2)}</td>
+                      <td className="px-4 py-3 text-right font-semibold">₹{(Number(item.price) * item.quantity).toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-green-50 border-t-2 border-green-100">
+                    <td colSpan={3} className="px-4 py-3 font-bold text-green-800">Total Amount</td>
+                    <td className="px-4 py-3 text-right font-bold text-green-700 text-lg">₹{order.total.toFixed(2)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <p className="text-center text-xs text-gray-400">Thank you for shopping with SuperMart! 🛒</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Single Order Card ────────────────────────────────────────────────────────
+function OrderCard({ order }) {
+  const cancelSecondsLeft = useCancelTimer(order.date);
+  const { cancelOrder } = useStore();
+  const [cancelling, setCancelling] = useState(false);
+  const [showInvoice, setShowInvoice] = useState(false);
+
+  const canCancel = cancelSecondsLeft > 0 && order.status !== 'Cancelled' && order.status !== 'Delivered';
+
+  const handleCancel = async () => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+    setCancelling(true);
+    const success = await cancelOrder(order.id);
+    if (!success) alert('Failed to cancel order. Please contact support.');
+    setCancelling(false);
+  };
+
+  return (
+    <>
+      {showInvoice && <InvoiceModal order={order} onClose={() => setShowInvoice(false)} />}
+
+      <div className={cn(
+        "bg-surface border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row gap-6 transition-all",
+        order.status === 'Cancelled' ? 'opacity-60 border-red-200' : 'border-gray-200'
+      )}>
+
+        <div className="flex-1 space-y-4">
+          {/* Order Header */}
+          <div className="flex justify-between items-start border-b border-gray-100 pb-4">
+            <div>
+              <p className="text-xs text-text-muted uppercase tracking-wider font-bold mb-1">Order {order.id}</p>
+              <p className="text-sm text-gray-600 flex items-center gap-1.5">
+                <Clock size={13} />
+                {new Date(order.date).toLocaleDateString()} at {new Date(order.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+            <div className="text-right">
+              <span className={cn(
+                "text-xs font-bold px-3 py-1 rounded-full",
+                order.status === 'Processing' ? 'bg-orange-100 text-orange-700' :
+                order.status === 'Out for Delivery' ? 'bg-blue-100 text-blue-700' :
+                order.status === 'Delivered' ? 'bg-green-100 text-green-700' :
+                order.status === 'Cancelled' ? 'bg-red-100 text-red-600' :
+                'bg-gray-100 text-gray-600'
+              )}>
+                {order.status}
+              </span>
+              <p className="font-bold text-lg mt-1">₹{order.total.toFixed(2)}</p>
+            </div>
+          </div>
+
+          {/* Item Thumbnails */}
+          <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
+            {order.items.slice(0, 5).map((item, i) => (
+              <div key={i} className="min-w-[56px] flex flex-col items-center gap-1">
+                <div className="w-14 h-14 bg-gray-50 rounded-xl flex items-center justify-center text-2xl shadow-sm border border-gray-100 overflow-hidden">
+                  {item.image?.startsWith('http')
+                    ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                    : item.image}
+                </div>
+                <span className="text-xs text-gray-400 font-medium">×{item.quantity}</span>
+              </div>
+            ))}
+            {order.items.length > 5 && (
+              <div className="min-w-[56px] w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center text-sm font-bold text-gray-500 border border-gray-100">
+                +{order.items.length - 5}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="md:w-56 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-6 flex flex-col justify-center gap-2.5">
+
+          {/* 30-sec Cancel Button */}
+          {canCancel && (
+            <button
+              onClick={handleCancel}
+              disabled={cancelling}
+              className="w-full flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 font-bold py-2 px-3 rounded-xl text-sm transition-all"
+            >
+              <XCircle size={15} />
+              {cancelling ? 'Cancelling...' : `Cancel Order (${cancelSecondsLeft}s)`}
+            </button>
+          )}
+
+          {/* View Details / Invoice */}
+          <button
+            onClick={() => setShowInvoice(true)}
+            className="w-full btn-outline py-2 text-sm flex items-center justify-center gap-2"
+          >
+            <Printer size={15} /> View Details & Invoice
+          </button>
+
+          {/* Reorder */}
+          {order.status !== 'Cancelled' && (
+            <ReorderButton items={order.items} />
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function ReorderButton({ items }) {
+  const { addToCart, toggleCart } = useStore();
+  return (
+    <button
+      onClick={() => { items.forEach(item => addToCart(item.id, item.quantity)); toggleCart(); }}
+      className="w-full btn-primary py-2 text-sm flex items-center justify-center gap-2"
+    >
+      <Repeat size={15} /> Reorder All
+    </button>
+  );
+}
+
+// ─── Orders Page ──────────────────────────────────────────────────────────────
 export function Orders() {
-  const { orders, addToCart, toggleCart, user } = useStore();
+  const { orders, user } = useStore();
   const navigate = useNavigate();
 
   if (!user) {
@@ -16,11 +325,6 @@ export function Orders() {
     );
   }
 
-  const handleReorder = (items) => {
-    items.forEach(item => addToCart(item.id, item.quantity));
-    toggleCart();
-  };
-
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 min-h-[60vh]">
       <div className="flex items-center gap-3 mb-8 pb-4 border-b border-gray-200">
@@ -29,7 +333,7 @@ export function Orders() {
         </div>
         <div>
           <h1 className="text-3xl font-display font-bold">My Orders</h1>
-          <p className="text-sm text-text-muted">Track, return, or order items again.</p>
+          <p className="text-sm text-text-muted">Track your orders, view invoices, and reorder anytime.</p>
         </div>
       </div>
 
@@ -45,50 +349,7 @@ export function Orders() {
       ) : (
         <div className="space-y-6">
           {orders.map(order => (
-            <div key={order.id} className="bg-surface border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row gap-6">
-              
-              <div className="flex-1 space-y-4">
-                <div className="flex justify-between items-start border-b border-gray-100 pb-4">
-                   <div>
-                     <p className="text-xs text-text-muted uppercase tracking-wider font-bold mb-1">Order {order.id}</p>
-                     <p className="text-sm">Placed on {new Date(order.date).toLocaleDateString()} at {new Date(order.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-                   </div>
-                   <div className="text-right">
-                     <span className="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full">{order.status}</span>
-                     <p className="font-bold text-lg mt-1">₹{order.total.toFixed(2)}</p>
-                   </div>
-                </div>
-
-                <div className="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
-                  {order.items.map(item => (
-                    <div key={item.id} className="min-w-[60px] flex flex-col items-center">
-                       <div className="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center text-3xl mb-1 shadow-sm border border-gray-100">
-                         {item.image}
-                       </div>
-                       <span className="text-xs text-text-muted font-medium">x{item.quantity}</span>
-                    </div>
-                  ))}
-                  {order.items.length > 5 && (
-                    <div className="w-16 h-16 bg-gray-50 rounded-xl flex items-center justify-center text-sm font-bold text-gray-500 border border-gray-100">
-                      +{order.items.length - 5}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="md:w-64 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-6 flex flex-col justify-center space-y-3">
-                 <button className="w-full btn-outline py-2 text-sm flex items-center justify-center gap-2">
-                   <HelpCircle size={16} /> Need Help?
-                 </button>
-                 <button 
-                  onClick={() => handleReorder(order.items)} 
-                  className="w-full btn-primary py-2 text-sm flex items-center justify-center gap-2"
-                 >
-                   <Repeat size={16} /> Reorder All
-                 </button>
-              </div>
-
-            </div>
+            <OrderCard key={order.id} order={order} />
           ))}
         </div>
       )}
@@ -96,10 +357,10 @@ export function Orders() {
   );
 }
 
+// ─── Wishlist Page ────────────────────────────────────────────────────────────
 export function Wishlist() {
   const { wishlist, user, products } = useStore();
   const navigate = useNavigate();
-
   const wishlistProducts = wishlist.map(id => products.find(p => p.id === id)).filter(Boolean);
 
   if (!user) {
@@ -114,13 +375,12 @@ export function Wishlist() {
     <div className="max-w-7xl mx-auto px-4 py-8 min-h-[60vh]">
       <h1 className="text-3xl font-display font-bold mb-2">Come Back Wishlist</h1>
       <p className="text-text-muted mb-8">Save items for your next basket here.</p>
-      
       {wishlistProducts.length === 0 ? (
-         <div className="text-center py-20 bg-surface rounded-2xl border border-gray-200">
-           <h3 className="text-xl font-medium text-text-muted">Your wishlist is lonely.</h3>
-           <p className="text-sm text-gray-400 mt-2">Tap the heart icon on any product to save it here.</p>
-           <button onClick={() => navigate('/')} className="mt-6 btn-outline">Explore Products</button>
-         </div>
+        <div className="text-center py-20 bg-surface rounded-2xl border border-gray-200">
+          <h3 className="text-xl font-medium text-text-muted">Your wishlist is lonely.</h3>
+          <p className="text-sm text-gray-400 mt-2">Tap the heart icon on any product to save it here.</p>
+          <button onClick={() => navigate('/')} className="mt-6 btn-outline">Explore Products</button>
+        </div>
       ) : (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
           {wishlistProducts.map(product => (

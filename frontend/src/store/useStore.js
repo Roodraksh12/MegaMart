@@ -128,6 +128,25 @@ export const useStore = create(
           console.error("Failed to sync orders", err);
         }
       },
+      cancelOrder: async (orderId) => {
+        const { user } = get();
+        if (!user) return false;
+        try {
+          const res = await fetch(`${API_URL}/api/orders/${orderId}/cancel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: user.id })
+          });
+          if (res.ok) {
+            get().fetchUserOrders(user.id);
+            return true;
+          }
+          return false;
+        } catch (err) {
+          console.error("Failed to cancel order", err);
+          return false;
+        }
+      },
       
       // Live Sync Engine
       liveSyncActive: false,

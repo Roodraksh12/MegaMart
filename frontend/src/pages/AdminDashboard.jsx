@@ -23,6 +23,9 @@ export default function AdminDashboard() {
   // New Product Modal State
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [newProduct, setNewProduct] = useState({ name: '', category: 'veg-fruits', price: '', mrp: '', image: '📦', unit: '1 pc', in_stock: true, is_fresh: false });
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const { products, fetchProducts } = useStore();
 
@@ -160,14 +163,44 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
+
   const handleAddProduct = async (e) => {
     e.preventDefault();
+    setIsUploading(true);
     try {
+      let imageUrl = newProduct.image;
+
+      // Upload image file if one was selected
+      if (imageFile) {
+        const reader = new FileReader();
+        const base64 = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result.split(',')[1]);
+          reader.onerror = reject;
+          reader.readAsDataURL(imageFile);
+        });
+
+        const uploadRes = await fetch(`${API_URL}/api/admin/upload-image`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
+          body: JSON.stringify({ base64, fileName: imageFile.name, mimeType: imageFile.type })
+        });
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadData.error || 'Image upload failed');
+        imageUrl = uploadData.url;
+      }
+
       const res = await fetch(`${API_URL}/api/admin/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` },
         body: JSON.stringify({
           ...newProduct,
+          image: imageUrl,
           price: Number(newProduct.price),
           mrp: Number(newProduct.mrp)
         })
@@ -175,11 +208,18 @@ export default function AdminDashboard() {
       if (res.ok) {
         setShowAddProduct(false);
         setNewProduct({ name: '', category: 'veg-fruits', price: '', mrp: '', image: '📦', unit: '1 pc', in_stock: true, is_fresh: false });
+        setImageFile(null);
+        setImagePreview(null);
         fetchProducts();
       } else {
         alert('Failed to add product');
       }
-    } catch(err) { console.error(err); }
+    } catch(err) {
+      console.error(err);
+      alert('Error: ' + err.message);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   if (!adminToken) {
@@ -510,16 +550,34 @@ export default function AdminDashboard() {
                   <label className="block text-xs font-semibold mb-1">Unit / Weight</label>
                   <input type="text" required value={newProduct.unit} onChange={e => setNewProduct({...newProduct, unit: e.target.value})} className="w-full border rounded p-2 text-sm" placeholder="e.g., 1 kg" />
                 </div>
-                <div>
-                  <label className="block text-xs font-semibold mb-1">Image (Emoji/URL)</label>
-                  <input type="text" required value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} className="w-full border rounded p-2 text-sm" placeholder="🍌" />
+                <div className="md:col-span-2 lg:col-span-1">
+                  <label className="block text-xs font-semibold mb-1">Product Image</label>
+                  <div className="flex items-center gap-3">
+                    {/* Preview */}
+                    <div className="w-16 h-16 rounded-lg bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden shrink-0">
+                      {imagePreview
+                        ? <img src={imagePreview} alt="preview" className="w-full h-full object-cover" />
+                        : <span className="text-2xl">{newProduct.image || '📦'}</span>
+                      }
+                    </div>
+                    <div className="flex-1">
+                      <label className="cursor-pointer w-full flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 rounded-lg px-3 py-2 text-xs font-bold transition-colors">
+                        📁 Choose Image File
+                        <input type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
+                      </label>
+                      <p className="text-[10px] text-gray-400 mt-1">Or type emoji/URL below</p>
+                      <input type="text" value={newProduct.image} onChange={e => setNewProduct({...newProduct, image: e.target.value})} className="w-full border rounded p-1.5 text-xs mt-1" placeholder="📦 or emoji" />
+                    </div>
+                  </div>
                 </div>
                 <div className="md:col-span-2 lg:col-span-3 flex items-center justify-between pt-2">
                   <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
                     <input type="checkbox" checked={newProduct.is_fresh} onChange={e => setNewProduct({...newProduct, is_fresh: e.target.checked})} className="w-4 h-4 text-primary" />
                     Mark as "Today's Fresh Pick"
                   </label>
-                  <button type="submit" className="btn-primary py-2 px-8 shadow-md">Create Product</button>
+                  <button type="submit" disabled={isUploading} className="btn-primary py-2 px-8 shadow-md disabled:opacity-60 flex items-center gap-2">
+                    {isUploading ? <><span className="animate-spin">⏳</span> Uploading...</> : 'Create Product'}
+                  </button>
                 </div>
               </form>
             </div>
