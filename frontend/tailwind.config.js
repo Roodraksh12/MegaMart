@@ -8,29 +8,24 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#2D6A4F',
-          dark: '#1B4332',
-          light: '#40916C',
+          DEFAULT: '#0C831F',
+          dark: '#096618',
+          light: '#1aab31',
         },
-        accent: {
-          DEFAULT: '#F4A261',
-          hover: '#E76F51',
-        },
-        background: '#FAFAF7',
+        background: '#F6F6F6',
         surface: '#FFFFFF',
         text: {
-          dark: '#1A1A1A',
+          dark: '#1C1C1C',
           muted: '#6B7280',
         }
       },
       fontFamily: {
         sans: ['DM Sans', 'sans-serif'],
-        display: ['Playfair Display', 'serif'],
+        display: ['DM Sans', 'sans-serif'],
       },
       animation: {
-        'slide-in': 'slideIn 0.3s ease-out forwards',
-        'fade-in': 'fadeIn 0.2s ease-in forwards',
-        'bounce-soft': 'bounceSoft 2s infinite',
+        'slide-in': 'slideIn 0.25s ease-out forwards',
+        'fade-in': 'fadeIn 0.15s ease-in forwards',
       },
       keyframes: {
         slideIn: {
@@ -41,10 +36,6 @@ export default {
           '0%': { opacity: '0' },
           '100%': { opacity: '1' },
         },
-        bounceSoft: {
-          '0%, 100%': { transform: 'translateY(-5%)' },
-          '50%': { transform: 'translateY(0)' },
-        }
       }
     },
   },

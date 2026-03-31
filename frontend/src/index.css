@@ -6,59 +6,43 @@
   body {
     @apply bg-background text-text-dark font-sans;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-display;
-  }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary text-white px-4 py-2 rounded-lg font-medium transition-colors hover:bg-primary-light active:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-primary text-white px-4 py-2 rounded-md font-medium transition-colors hover:bg-primary-light active:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
   .btn-secondary {
-    @apply bg-accent text-white px-4 py-2 rounded-lg font-medium transition-colors hover:bg-accent-hover active:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-gray-100 text-text-dark px-4 py-2 rounded-md font-medium transition-colors hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed;
   }
   
   .btn-outline {
-    @apply border-2 border-primary text-primary px-4 py-2 rounded-lg font-medium transition-colors hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply border border-primary text-primary px-4 py-2 rounded-md font-medium transition-colors hover:bg-primary hover:text-white disabled:opacity-50 disabled:cursor-not-allowed;
   }
 
-  .card-premium {
-    @apply bg-surface rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md hover:-translate-y-1 overflow-hidden;
+  .card {
+    @apply bg-surface rounded-lg border border-gray-200 overflow-hidden;
   }
 }
 
-/* Custom scrollbar for webkit */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* Hide scrollbar utility */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Print styles — only invoice section prints */
 @media print {
-  body * {
-    visibility: hidden;
-  }
+  body * { visibility: hidden; }
   #invoice-section,
-  #invoice-section * {
-    visibility: visible;
-  }
+  #invoice-section * { visibility: visible; }
   #invoice-section {
     position: fixed;
-    top: 0;
-    left: 0;
+    top: 0; left: 0;
     width: 100%;
     border: none !important;
     box-shadow: none !important;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Star, Package } from 'lucide-react';
+import { ArrowRight, Star, Package, ChevronRight } from 'lucide-react';
 import { CATEGORIES, QUICK_BASKETS } from '../data/mockData';
 import ProductCard from '../components/ProductCard';
 import { useStore } from '../store/useStore';
@@ -7,157 +7,139 @@ import { cn } from '../utils/cn';
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState('all');
-
   const { addToCart, toggleCart, products, fetchProducts, isProductsLoading } = useStore();
 
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
-  const filteredProducts = activeCategory === 'all' 
-    ? products 
+  const filteredProducts = activeCategory === 'all'
+    ? products
     : products.filter(p => p.category === activeCategory);
 
   const freshPicks = products.filter(p => p.isFresh);
 
   return (
     <div className="pb-16">
-      {/* Hero Section */}
-      <section className="bg-primary/5 py-8 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center gap-8">
-            <div className="flex-1 space-y-6">
-              <span className="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full text-xs tracking-wider uppercase">
-                Free Delivery above ₹499
-              </span>
-              <h1 className="text-4xl md:text-6xl font-display font-bold text-text-dark leading-tight">
-                Fresh Groceries, <br/>
-                <span className="text-primary text-5xl md:text-7xl">Delivered Local.</span>
-              </h1>
-              <p className="text-text-muted text-lg max-w-md">
-                Skip the lines. Get farm-fresh vegetables, dairy, and daily essentials delivered right to your door in minutes.
-              </p>
-              <button 
-                onClick={() => document.getElementById('shop-section').scrollIntoView({ behavior: 'smooth' })}
-                className="btn-primary flex items-center gap-2 text-lg px-6 py-3 shadow-xl shadow-primary/20 rounded-xl"
-              >
-                Shop Now <ArrowRight size={20} />
-              </button>
-            </div>
-            <div className="flex-1 w-full relative h-[300px] md:h-[400px]">
-              {/* Abstract decorative hero composition */}
-              <div className="absolute inset-0 bg-accent/20 rounded-full blur-3xl opacity-50 transform translate-x-10 translate-y-10"></div>
-              <div className="relative h-full flex items-center justify-center">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="card-premium p-6 text-6xl flex items-center justify-center bg-white rotate-[-6deg] shadow-2xl">🥦</div>
-                  <div className="card-premium p-6 text-6xl flex items-center justify-center bg-white rotate-[6deg] shadow-2xl translate-y-8">🍞</div>
-                  <div className="card-premium p-6 text-6xl flex items-center justify-center bg-white rotate-[3deg] shadow-2xl -translate-y-4">🥛</div>
-                  <div className="card-premium p-6 text-6xl flex items-center justify-center bg-white rotate-[-3deg] shadow-2xl translate-y-4">🍎</div>
-                </div>
+
+      {/* Hero Banner */}
+      <div className="bg-primary px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center gap-6">
+          <div className="flex-1 text-white">
+            <p className="text-sm font-medium text-green-200 mb-2">⚡ Delivered in 30 minutes</p>
+            <h1 className="text-3xl md:text-5xl font-bold leading-tight mb-3">
+              Fresh groceries,<br />at your door.
+            </h1>
+            <p className="text-green-100 text-sm md:text-base mb-6 max-w-md">
+              Vegetables, dairy, bakery and daily essentials — delivered fresh.
+            </p>
+            <button
+              onClick={() => document.getElementById('shop-section').scrollIntoView({ behavior: 'smooth' })}
+              className="inline-flex items-center gap-2 bg-white text-primary font-semibold px-5 py-2.5 rounded-md hover:bg-green-50 transition-colors text-sm"
+            >
+              Shop Now <ChevronRight size={16} />
+            </button>
+          </div>
+          <div className="hidden md:grid grid-cols-2 gap-3 flex-shrink-0">
+            {products.slice(0, 4).map(p => (
+              <div key={p.id} className="bg-white/10 rounded-lg p-3 flex flex-col items-center gap-1 w-24">
+                <span className="text-3xl">{p.image?.startsWith('http') ? '📦' : p.image}</span>
+                <span className="text-white text-[10px] font-medium text-center line-clamp-1">{p.name}</span>
               </div>
-            </div>
+            ))}
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* Fresh Picks Horizontal Slider */}
-      {freshPicks.length > 0 && (
-        <section className="py-8 bg-green-50 border-y border-green-100 mt-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-2 mb-6">
-              <Star className="text-green-600 fill-green-600" size={24} />
-              <h2 className="font-display font-bold text-2xl text-text-dark">Today's Fresh Picks</h2>
-              <span className="bg-green-600 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded-full ml-2">Arrived at 6 AM</span>
-            </div>
-            <div className="flex overflow-x-auto pb-4 gap-4 snap-x hide-scrollbar" style={{ scrollbarWidth: 'none' }}>
-              {freshPicks.map(product => (
-                <div key={product.id} className="min-w-[200px] sm:min-w-[220px] snap-start">
-                  <ProductCard product={product} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* Quick Baskets */}
-      <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-2 mb-6">
-          <Package className="text-accent" size={24} />
-          <h2 className="font-display font-bold text-2xl text-text-dark">Quick Baskets</h2>
-          <span className="text-sm text-text-muted ml-2">1-click bundles for your daily needs</span>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {QUICK_BASKETS.map(basket => (
-            <div key={basket.id} className="bg-surface border border-gray-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-accent/10 rounded-bl-full -z-10 group-hover:bg-accent/20 transition-colors"></div>
-              <h3 className="font-bold text-lg text-text-dark mb-1">{basket.name}</h3>
-              <p className="text-xs text-text-muted mb-4">Includes {basket.items.length} premium items</p>
-              
-              <div className="flex -space-x-3 mb-4">
-                {basket.items.map((itemId, i) => {
-                  const product = products.find(p => p.id === itemId);
-                  return (
-                    <div key={itemId} className="w-10 h-10 rounded-full bg-white border border-gray-100 flex items-center justify-center text-xl shadow-sm z-[calc(10-i)]" style={{ zIndex: 10 - i }}>
-                      {product?.image}
-                    </div>
-                  );
-                })}
-              </div>
-              
-              <div className="flex items-end justify-between mt-6">
-                <div>
-                  <div className="text-sm text-green-600 font-medium mb-1">Save ₹{basket.saving}</div>
-                  <div className="font-bold text-2xl text-text-dark">₹{basket.price}</div>
-                </div>
-                <button 
-                  onClick={() => {
-                    basket.items.forEach(id => addToCart(id, 1));
-                    toggleCart();
-                  }}
-                  className="btn-secondary whitespace-nowrap"
-                >
-                  Add Bundle
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Main Shop Section */}
-      <section id="shop-section" className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="font-display font-bold text-3xl text-text-dark mb-8">Shop by Category</h2>
-        
-        {/* Category Chips */}
-        <div className="flex overflow-x-auto pb-4 gap-3 mb-8 hide-scrollbar">
+      {/* Category Pills */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
           {CATEGORIES.map(category => (
             <button
               key={category.id}
               onClick={() => setActiveCategory(category.id)}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all border",
-                activeCategory === category.id 
-                  ? "bg-primary text-white border-primary shadow-md" 
-                  : "bg-surface text-text-dark border-gray-200 hover:border-primary/50 hover:bg-primary/5"
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-full whitespace-nowrap text-sm border transition-colors flex-shrink-0',
+                activeCategory === category.id
+                  ? 'bg-primary text-white border-primary'
+                  : 'bg-white text-text-dark border-gray-200 hover:border-gray-300'
               )}
             >
-              <span className="text-lg">{category.icon}</span>
-              <span className="font-medium text-sm">{category.name}</span>
+              <span>{category.icon}</span>
+              <span>{category.name}</span>
             </button>
           ))}
         </div>
+      </div>
 
-        {/* Product Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+      {/* Fresh Picks */}
+      {freshPicks.length > 0 && (
+        <div className="mt-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Star size={16} className="text-green-600 fill-green-600" />
+              <h2 className="font-semibold text-base text-text-dark">Fresh Picks Today</h2>
+            </div>
+          </div>
+          <div className="flex overflow-x-auto gap-3 pb-2 hide-scrollbar">
+            {freshPicks.map(product => (
+              <div key={product.id} className="min-w-[160px] sm:min-w-[180px]">
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Quick Baskets */}
+      <div className="mt-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center gap-2 mb-4">
+          <Package size={16} className="text-text-muted" />
+          <h2 className="font-semibold text-base text-text-dark">Quick Baskets</h2>
+          <span className="text-xs text-text-muted ml-1">· 1-click bundles</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {QUICK_BASKETS.map(basket => (
+            <div key={basket.id} className="bg-white border border-gray-200 rounded-lg p-4 flex items-center justify-between gap-4">
+              <div>
+                <h3 className="font-semibold text-sm text-text-dark">{basket.name}</h3>
+                <p className="text-xs text-text-muted mt-0.5">{basket.items.length} items</p>
+                <div className="flex items-baseline gap-2 mt-2">
+                  <span className="font-bold text-base">₹{basket.price}</span>
+                  <span className="text-xs text-green-600 font-medium">Save ₹{basket.saving}</span>
+                </div>
+              </div>
+              <button
+                onClick={() => { basket.items.forEach(id => addToCart(id, 1)); toggleCart(); }}
+                className="flex-shrink-0 border border-primary text-primary text-xs font-semibold px-3 py-1.5 rounded hover:bg-primary hover:text-white transition-colors"
+              >
+                Add All
+              </button>
+            </div>
           ))}
         </div>
-        
-        {filteredProducts.length === 0 && (
-          <div className="py-20 text-center">
-            <h3 className="text-xl text-text-muted">No products found in this category.</h3>
+      </div>
+
+      {/* Main Product Grid */}
+      <section id="shop-section" className="mt-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="font-semibold text-base text-text-dark mb-4">
+          {activeCategory === 'all' ? 'All Products' : CATEGORIES.find(c => c.id === activeCategory)?.name}
+          <span className="text-text-muted font-normal text-sm ml-2">({filteredProducts.length} items)</span>
+        </h2>
+
+        {isProductsLoading ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {[...Array(10)].map((_, i) => (
+              <div key={i} className="bg-white border border-gray-200 rounded-lg h-52 animate-pulse" />
+            ))}
+          </div>
+        ) : filteredProducts.length === 0 ? (
+          <div className="py-16 text-center text-text-muted">No products in this category.</div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            {filteredProducts.map(product => (
+              <ProductCard key={product.id} product={product} />
+            ))}
           </div>
         )}
       </section>
