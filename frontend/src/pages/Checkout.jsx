@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CheckCircle, Truck, CreditCard, ChevronRight, PackageCheck } from 'lucide-react';
+import { CheckCircle, Truck, Banknote, ChevronRight, PackageCheck } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
 
