@@ -8,6 +8,7 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [mobileSearchVisible, setMobileSearchVisible] = useState(false);
 
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith('/admin');
@@ -29,6 +30,13 @@ export default function Header() {
     }
   };
 
+  const closeMobileSearch = () => {
+    setMobileSearchVisible(false);
+    setIsSearchOpen(false);
+    setSearchQuery('');
+    setSearchResults([]);
+  };
+
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -39,7 +47,7 @@ export default function Header() {
             <span className="font-bold text-xl text-primary tracking-tight">SuperMart</span>
           </Link>
 
-          {/* Search — desktop */}
+          {/* Search — desktop only */}
           {!isAdminPage && (
             <div className="hidden md:flex flex-1 max-w-xl relative">
               <div className="relative w-full">
@@ -74,12 +82,23 @@ export default function Header() {
             </div>
           )}
 
-          {/* Spacer */}
+          {/* Spacer — pushes right actions to the end on mobile */}
           <div className="flex-1 md:hidden" />
 
           {/* Right actions */}
           {!isAdminPage && (
             <div className="flex items-center gap-1 sm:gap-2">
+
+              {/* Search icon — mobile only */}
+              <button
+                id="mobile-search-toggle"
+                className="md:hidden p-2 text-gray-500 hover:text-primary transition-colors rounded-md hover:bg-gray-100"
+                onClick={() => setMobileSearchVisible(v => !v)}
+                aria-label="Toggle search"
+              >
+                <Search size={20} />
+              </button>
+
               <Link to="/wishlist" className="hidden sm:flex p-2 text-gray-500 hover:text-primary transition-colors rounded-md hover:bg-gray-100">
                 <Heart size={20} />
               </Link>
@@ -128,6 +147,43 @@ export default function Header() {
           )}
         </div>
       </div>
+
+      {/* Search — mobile expandable row (below header bar) */}
+      {!isAdminPage && mobileSearchVisible && (
+        <div className="md:hidden border-t border-gray-100 px-4 py-2 bg-white relative">
+          <div className="relative">
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              autoFocus
+              type="text"
+              placeholder="Search groceries..."
+              className="w-full bg-gray-100 rounded-md py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-white transition-colors"
+              value={searchQuery}
+              onChange={handleSearch}
+              onBlur={() => setTimeout(() => setIsSearchOpen(false), 200)}
+              onFocus={() => { if (searchQuery.length > 1) setIsSearchOpen(true); }}
+            />
+          </div>
+          {isSearchOpen && searchResults.length > 0 && (
+            <div className="absolute top-full left-4 right-4 bg-white border border-gray-200 rounded-b-md shadow-lg overflow-hidden z-50">
+              {searchResults.map(product => (
+                <Link
+                  key={product.id}
+                  to="/"
+                  onClick={closeMobileSearch}
+                  className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                >
+                  <span className="text-xl w-7 text-center">{product.image?.startsWith('http') ? '📦' : product.image}</span>
+                  <div>
+                    <p className="text-sm font-medium text-text-dark">{product.name}</p>
+                    <p className="text-xs text-text-muted">{product.unit} · ₹{product.price}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </header>
   );
 }
