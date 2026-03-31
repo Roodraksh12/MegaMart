@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -6,6 +6,20 @@ import CartDrawer from '../components/CartDrawer';
 import AuthModal from '../components/AuthModal';
 
 export default function MainLayout() {
+  const [waNumber, setWaNumber] = useState('919876543210');
+
+  useEffect(() => {
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/settings/store`)
+      .then(res => res.json())
+      .then(data => { 
+        if (data.phone) {
+          const digits = data.phone.replace(/\\D/g, '');
+          setWaNumber(digits.startsWith('91') ? digits : '91' + digits);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="min-h-screen flex flex-col font-sans text-text-dark selection:bg-primary selection:text-white">
       <Header />
@@ -20,7 +34,8 @@ export default function MainLayout() {
       
       {/* Floating WhatsApp Button */}
       <a 
-        href="https://wa.me/919876543210" 
+        href={`https://wa.me/${waNumber}`} 
+
         target="_blank" 
         rel="noreferrer"
         className="fixed bottom-6 right-6 w-14 h-14 bg-green-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 active:scale-95 transition-all z-40 group"

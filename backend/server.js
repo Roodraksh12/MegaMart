@@ -210,6 +210,38 @@ app.post('/api/auth/admin-change-password', verifyAdmin, async (req, res) => {
   res.json({ message: 'Password updated successfully' });
 });
 
+// 4.7. Get Mart Owner Details (Admin)
+app.get('/api/admin/account', verifyAdmin, async (req, res) => {
+  try {
+    const { data } = await supabase.from('admin_settings').select('key, value').in('key', ['mart_name', 'mart_email', 'mart_phone']);
+    const settings = { mart_name: '', mart_email: '', mart_phone: '919876543210' };
+    (data || []).forEach(row => { settings[row.key] = row.value; });
+    res.json(settings);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch account details' });
+  }
+});
+
+// 4.8. Update Mart Owner Details (Admin - requires password)
+app.post('/api/admin/account', verifyAdmin, async (req, res) => {
+  const { name, email, phone, password } = req.body;
+  if (!password) return res.status(400).json({ error: 'Admin password is required to save changes' });
+  
+  const storedPassword = await getAdminPassword();
+  if (password !== storedPassword) return res.status(401).json({ error: 'Incorrect admin password' });
+
+  try {
+    await supabase.from('admin_settings').upsert([
+      { key: 'mart_name', value: name || '' },
+      { key: 'mart_email', value: email || '' },
+      { key: 'mart_phone', value: phone || '' }
+    ]);
+    res.json({ message: 'Account details updated successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update account details' });
+  }
+});
+
 // 5. Place an order
 app.post('/api/orders', async (req, res) => {
   const { userId, total, address, items, paymentMethod } = req.body;
@@ -505,6 +537,16 @@ app.get('/api/settings/delivery', async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch delivery settings' });
+  }
+});
+
+// 18. Public: get general store settings (WhatsApp phone)
+app.get('/api/settings/store', async (req, res) => {
+  try {
+    const { data } = await supabase.from('admin_settings').select('value').eq('key', 'mart_phone').single();
+    res.json({ phone: data?.value || '919876543210' }); // fallback number
+  } catch (err) {
+    res.json({ phone: '919876543210' });
   }
 });
 

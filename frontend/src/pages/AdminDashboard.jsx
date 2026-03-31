@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, Clock, Truck, ShieldCheck, Eye, EyeOff, Tag, Settings, Trash2, Plus, RefreshCw } from 'lucide-react';
+import { CheckCircle, Clock, Truck, ShieldCheck, Eye, EyeOff, Tag, Settings, Trash2, Plus, RefreshCw, User } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
 
@@ -38,6 +38,11 @@ export default function AdminDashboard() {
   const [deliverySettings, setDeliverySettings] = useState({ deliveryFee: 30, freeAbove: 150 });
   const [deliverySaving, setDeliverySaving] = useState(false);
   const [deliveryMsg, setDeliveryMsg] = useState('');
+
+  // ── Account state ──────────────────────────────────
+  const [accountForm, setAccountForm] = useState({ name: '', email: '', phone: '', password: '' });
+  const [accountMsg, setAccountMsg] = useState({ text: '', isError: false });
+  const [accountSaving, setAccountSaving] = useState(false);
 
   // Promo codes
   const [promoCodes, setPromoCodes] = useState([]);
@@ -87,8 +92,19 @@ export default function AdminDashboard() {
   }, [adminToken]);
 
   // Fetch store settings data when switching to store tab
+  async function fetchAccountDetails() {
+    try {
+      const res = await fetch(`${API_URL}/api/admin/account`, { headers: { 'Authorization': `Bearer ${adminToken}` } });
+      if (res.ok) { 
+        const data = await res.json(); 
+        setAccountForm(f => ({ ...f, name: data.mart_name || '', email: data.mart_email || '', phone: data.mart_phone || '' })); 
+      }
+    } catch (err) { console.error(err); }
+  }
+
   useEffect(() => {
     if (activeTab === 'store' && adminToken) { fetchDeliverySettings(); fetchPromoCodes(); }
+    if (activeTab === 'account' && adminToken) { fetchAccountDetails(); }
   }, [activeTab]);
 
   // Auto-logout on inactivity
@@ -183,6 +199,23 @@ export default function AdminDashboard() {
     } catch { setDeliveryMsg('Network error'); } finally { setDeliverySaving(false); setTimeout(() => setDeliveryMsg(''), 3000); }
   };
 
+  const handleSaveAccount = async (e) => {
+    e.preventDefault();
+    setAccountSaving(true);
+    setAccountMsg({ text: '', isError: false });
+    try {
+      const res = await fetch(`${API_URL}/api/admin/account`, { method: 'POST', headers: authHeaders, body: JSON.stringify(accountForm) });
+      const data = await res.json();
+      if (res.ok) {
+        setAccountMsg({ text: '✅ Account details saved successfully!', isError: false });
+        setAccountForm(f => ({ ...f, password: '' }));
+      } else {
+        setAccountMsg({ text: data.error || 'Failed to save', isError: true });
+      }
+    } catch { setAccountMsg({ text: 'Network error', isError: true }); } 
+    finally { setAccountSaving(false); setTimeout(() => setAccountMsg({ text: '', isError: false }), 4000); }
+  };
+
   const handleCreatePromo = async (e) => {
     e.preventDefault();
     setPromoMsg({ text: '', isError: false });
@@ -250,6 +283,7 @@ export default function AdminDashboard() {
           { id: 'orders', label: `Orders (${allOrders.length})`, icon: '🛒' },
           { id: 'inventory', label: `Inventory (${products.length})`, icon: '📦' },
           { id: 'store', label: 'Store Settings', icon: '⚙️' },
+          { id: 'account', label: 'My Account', icon: '👤' },
           { id: 'settings', label: 'Security', icon: '🔐' },
         ].map(tab => (
           <button
@@ -586,6 +620,52 @@ export default function AdminDashboard() {
               </div>
             )}
             {promoLoading && <p className="text-center text-sm text-gray-400 py-4">Loading codes...</p>}
+          </div>
+        </div>
+      )}
+
+      {/* ── MY ACCOUNT TAB ── */}
+      {activeTab === 'account' && (
+        <div className="animate-fade-in max-w-lg space-y-8">
+          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-gray-50 border-b border-gray-100 px-6 py-4 flex items-center gap-3">
+              <span className="text-xl">👤</span>
+              <div>
+                <h3 className="font-bold text-gray-900">Mart Owner Details</h3>
+                <p className="text-xs text-gray-500">Publicly visible contact details for your store</p>
+              </div>
+            </div>
+            <form onSubmit={handleSaveAccount} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Owner / Mart Name</label>
+                <input type="text" value={accountForm.name} onChange={e => setAccountForm(f => ({ ...f, name: e.target.value }))} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="e.g. SuperMart" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">Support Email</label>
+                <input type="email" value={accountForm.email} onChange={e => setAccountForm(f => ({ ...f, email: e.target.value }))} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="e.g. contact@supermart.com" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">WhatsApp / Phone Number</label>
+                <div className="flex">
+                  <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-200 bg-gray-100 text-gray-500 text-sm font-bold">+91</span>
+                  <input type="tel" value={accountForm.phone} onChange={e => {
+                    setAccountForm(f => ({ ...f, phone: e.target.value.replace(/\\D/g, '') }))
+                  }} className="w-full border border-gray-200 bg-gray-50 rounded-r-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="9876543210" />
+                </div>
+                <p className="text-[10px] text-gray-400 mt-1">This number receives WhatsApp orders</p>
+              </div>
+
+              <div className="pt-4 border-t border-gray-100">
+                <label className="block text-sm font-medium text-gray-600 mb-1">Admin Password <span className="text-red-500">*</span></label>
+                <input type="password" required value={accountForm.password} onChange={e => setAccountForm(f => ({ ...f, password: e.target.value }))} className="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20" placeholder="Enter password to save changes" />
+              </div>
+
+              {accountMsg.text && <div className={`text-sm font-medium ${accountMsg.isError ? 'text-red-500' : 'text-green-600'}`}>{accountMsg.text}</div>}
+
+              <button type="submit" disabled={accountSaving} className="w-full btn-primary py-3 flex items-center justify-center gap-2 disabled:opacity-60 mt-2">
+                {accountSaving ? 'Saving...' : 'Save Account Details'}
+              </button>
+            </form>
           </div>
         </div>
       )}
