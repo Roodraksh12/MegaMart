@@ -67,7 +67,8 @@ export default function Header() {
                   {searchResults.map(product => (
                     <Link
                       key={product.id}
-                      to="/"
+                      to={`/product/${product.id}`}
+                      onClick={() => { setIsSearchOpen(false); setSearchQuery(''); setSearchResults([]); }}
                       className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
                     >
                       <span className="text-xl w-7 text-center">{product.image?.startsWith('http') ? '📦' : product.image}</span>
@@ -169,7 +170,7 @@ export default function Header() {
               {searchResults.map(product => (
                 <Link
                   key={product.id}
-                  to="/"
+                  to={`/product/${product.id}`}
                   onClick={closeMobileSearch}
                   className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors"
                 >
