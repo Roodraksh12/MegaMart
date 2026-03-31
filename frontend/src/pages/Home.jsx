@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Clock, Star, TrendingUp, CheckCircle, Package } from 'lucide-react';
+import { ArrowRight, Star, Package } from 'lucide-react';
 import { CATEGORIES, QUICK_BASKETS } from '../data/mockData';
 import ProductCard from '../components/ProductCard';
 import { useStore } from '../store/useStore';
@@ -7,10 +7,8 @@ import { cn } from '../utils/cn';
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState('all');
-  const [pincode, setLocalPincode] = useState('');
-  const [pincodeStatus, setPincodeStatus] = useState(null); // null | 'success' | 'error'
 
-  const { addToCart, toggleCart, coveredPincodes, setPincode, products, fetchProducts, isProductsLoading } = useStore();
+  const { addToCart, toggleCart, products, fetchProducts, isProductsLoading } = useStore();
 
   useEffect(() => {
     fetchProducts();
@@ -20,56 +18,10 @@ export default function Home() {
     ? products 
     : products.filter(p => p.category === activeCategory);
 
-  const handlePincodeCheck = () => {
-    if (coveredPincodes.includes(pincode)) {
-      setPincodeStatus('success');
-      setPincode(pincode);
-    } else {
-      setPincodeStatus('error');
-    }
-    setTimeout(() => setPincodeStatus(null), 5000);
-  };
-
   const freshPicks = products.filter(p => p.isFresh);
 
   return (
     <div className="pb-16">
-      {/* Smart Pincode Banner */}
-      <div className="bg-accent/10 border-b border-accent/20 py-2">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-0">
-          <div className="flex items-center gap-2">
-            <Clock size={16} className="text-accent-hover" />
-            <span className="text-sm font-medium text-text-dark">Delivering in 30 minutes! Check if we serve your area:</span>
-          </div>
-          <div className="flex items-center gap-2 max-w-xs w-full sm:w-auto">
-            <input 
-              type="text" 
-              maxLength="6"
-              placeholder="Enter Pincode"
-              value={pincode}
-              onChange={(e) => setLocalPincode(e.target.value)}
-              className="bg-white border flex-1 border-gray-200 rounded text-sm px-3 py-1.5 focus:outline-none focus:border-primary"
-            />
-            <button 
-              onClick={handlePincodeCheck}
-              className="btn-primary py-1.5 px-3 text-sm whitespace-nowrap"
-            >
-              Check
-            </button>
-          </div>
-        </div>
-        {pincodeStatus === 'success' && (
-          <p className="text-center text-xs text-green-600 font-bold mt-2 animate-fade-in">
-            ✅ Great! We deliver to {pincode}.
-          </p>
-        )}
-        {pincodeStatus === 'error' && (
-          <p className="text-center text-xs text-red-500 font-bold mt-2 animate-fade-in">
-            ❌ Sorry, we don't deliver to {pincode} yet.
-          </p>
-        )}
-      </div>
-
       {/* Hero Section */}
       <section className="bg-primary/5 py-8 md:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -19,7 +19,7 @@ export default function Checkout() {
     slot: 'Morning 7-11 AM'
   });
   
-  const [paymentMethod, setPaymentMethod] = useState('upi');
+  const [paymentMethod, setPaymentMethod] = useState('cod');
   const [isProcessing, setIsProcessing] = useState(false);
 
   const total = getCartTotal();
@@ -216,64 +216,29 @@ export default function Checkout() {
         {/* Step 3: Payment */}
         {step === 3 && (
           <div className="space-y-6 animate-fade-in">
-            <h2 className="font-display font-bold text-2xl mb-4">Payment Options</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              {/* Payment Tabs */}
-              <div className="md:col-span-1 space-y-2 border-r border-gray-100 pr-4">
-                {[
-                  { id: 'upi', label: 'UPI / QR' },
-                  { id: 'card', label: 'Credit / Debit Card' },
-                  { id: 'cod', label: 'Cash on Delivery' }
-                ].map(opt => (
-                  <button 
-                    key={opt.id}
-                    onClick={() => setPaymentMethod(opt.id)}
-                    className={cn(
-                      "w-full text-left p-3 rounded-lg text-sm font-medium transition-colors border",
-                      paymentMethod === opt.id ? "bg-primary text-white border-primary shadow-md" : "bg-white border-gray-200 hover:border-primary/50"
-                    )}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
+            <h2 className="font-display font-bold text-2xl mb-4">Payment</h2>
 
-              {/* Payment Forms */}
-              <div className="md:col-span-3 min-h-[300px] flex flex-col justify-center items-center bg-gray-50 rounded-xl border border-gray-200 p-6">
-                {paymentMethod === 'upi' && (
-                  <div className="text-center space-y-4">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/QR_code_for_mobile_English_Wikipedia.svg" alt="Mock QR" className="w-40 h-40 mx-auto opacity-70 border border-gray-300 rounded" />
-                    <p className="text-sm text-text-muted font-medium">Scan QR to pay ₹{(total + 15).toFixed(2)}</p>
-                    <div className="flex items-center gap-2 justify-center mt-2">
-                      <span className="text-xs bg-white px-2 py-1 rounded shadow-sm border text-gray-500">Google Pay</span>
-                      <span className="text-xs bg-white px-2 py-1 rounded shadow-sm border text-gray-500">PhonePe</span>
-                    </div>
-                  </div>
-                )}
-            {/* Payment Method: COD only */}
-            <div className="text-center space-y-4">
-              <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            {/* COD Only Panel */}
+            <div className="flex flex-col items-center justify-center bg-green-50 border-2 border-green-100 rounded-2xl p-10 gap-4">
+              <div className="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
                 <Banknote size={40} />
               </div>
-              <p className="text-lg font-bold">Cash on Delivery (COD)</p>
-              <p className="text-sm text-text-muted">Pay in cash or via UPI / QR code at the time of delivery.</p>
-              <p className="text-xs text-gray-400">Please keep exact change ready for a seamless experience.</p>
-            </div>
-              </div>
+              <p className="text-xl font-bold text-gray-800">Cash on Delivery (COD)</p>
+              <p className="text-sm text-text-muted text-center max-w-sm">Pay in cash or via UPI / QR code at the time of delivery. Please keep exact change ready.</p>
+              <span className="text-xs bg-green-600 text-white font-bold px-4 py-1.5 rounded-full">Only Available Payment Method</span>
             </div>
 
-            <div className="mt-8 flex justify-between border-t border-gray-200 pt-6">
+            <div className="flex justify-between border-t border-gray-200 pt-6">
               <button onClick={() => setStep(2)} className="btn-outline py-3 px-8" disabled={isProcessing}>Back</button>
-              <button 
-                onClick={handlePlaceOrder} 
+              <button
+                onClick={handlePlaceOrder}
                 disabled={isProcessing}
                 className={cn(
                   "btn-primary py-3 px-8 flex items-center justify-center gap-2 min-w-[200px]",
                   isProcessing && "opacity-70 cursor-wait"
                 )}
               >
-                {isProcessing ? 'Processing...' : `Pay ₹${(total + 15).toFixed(2)}`}
+                {isProcessing ? 'Processing...' : `Confirm Order ₹${(total + 15).toFixed(2)}`}
               </button>
             </div>
           </div>
