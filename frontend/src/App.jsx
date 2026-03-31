@@ -5,8 +5,9 @@ import Home from './pages/Home';
 import Checkout from './pages/Checkout';
 import { Orders, Wishlist } from './pages/Orders';
 import { useStore } from './store/useStore';
-
 import AdminDashboard from './pages/AdminDashboard';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import RefundPolicy from './pages/RefundPolicy';
 
 function App() {
   const { startLiveSync } = useStore();
@@ -24,6 +25,8 @@ function App() {
           <Route path="orders" element={<Orders />} />
           <Route path="wishlist" element={<Wishlist />} />
           <Route path="admin" element={<AdminDashboard />} />
+          <Route path="privacy" element={<PrivacyPolicy />} />
+          <Route path="refund" element={<RefundPolicy />} />
         </Route>
       </Routes>
     </BrowserRouter>
