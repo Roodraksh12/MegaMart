@@ -10,7 +10,7 @@ export const useStore = create(
       products: [],
       isProductsLoading: false,
       fetchProducts: async () => {
-        set({ isProductsLoading: true });
+        if (get().products.length === 0) set({ isProductsLoading: true });
         try {
           const res = await fetch(`${API_URL}/api/products`);
           const data = await res.json();
