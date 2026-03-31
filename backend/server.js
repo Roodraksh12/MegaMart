@@ -30,6 +30,7 @@ app.use(cors({
 app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supermart_secret_super_secure';
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'SuperAdmin123!';
 
 // Initialize Firebase Admin SDK
@@ -177,7 +178,12 @@ app.post('/api/auth/login', async (req, res) => {
   res.json({ user: { id: user.id, name: user.name, phone: user.phone }, token });
 });
 
-// Admin password helper — reads from Supabase settings, falls back to .env
+// Admin auth helpers — reads from Supabase settings, falls back to .env
+async function getAdminUsername() {
+  const { data } = await supabase.from('admin_settings').select('value').eq('key', 'admin_username').single();
+  return data?.value || ADMIN_USERNAME;
+}
+
 async function getAdminPassword() {
   const { data } = await supabase.from('admin_settings').select('value').eq('key', 'admin_password').single();
   return data?.value || ADMIN_PASSWORD;
@@ -185,13 +191,18 @@ async function getAdminPassword() {
 
 // 4.5. Admin Login
 app.post('/api/auth/admin-login', async (req, res) => {
-  const { password } = req.body;
+  const { username, password } = req.body;
+  
+  if (!username || !password) return res.status(400).json({ error: 'Username and password are required' });
+
+  const currentUsername = await getAdminUsername();
   const currentPassword = await getAdminPassword();
-  if (password === currentPassword) {
+  
+  if (username === currentUsername && password === currentPassword) {
     const token = jwt.sign({ id: 'admin', role: 'admin' }, JWT_SECRET, { expiresIn: '24h' });
     return res.json({ token, user: { id: 'admin', role: 'admin' } });
   }
-  res.status(400).json({ error: 'Invalid Admin Password' });
+  res.status(401).json({ error: 'Invalid Username or Password' });
 });
 
 // 4.6. Change Admin Password

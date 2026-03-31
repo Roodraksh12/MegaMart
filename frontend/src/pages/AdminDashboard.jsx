@@ -15,6 +15,7 @@ function randomCode(prefix = 'SUPER') {
 
 export default function AdminDashboard() {
   const [adminToken, setAdminToken] = useState(sessionStorage.getItem('adminToken') || null);
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const [activeTab, setActiveTab] = useState('orders'); // 'orders' | 'inventory' | 'store' | 'settings'
@@ -128,7 +129,7 @@ export default function AdminDashboard() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${API_URL}/api/auth/admin-login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+      const res = await fetch(`${API_URL}/api/auth/admin-login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
       const data = await res.json();
       if (data.token) { sessionStorage.setItem('adminToken', data.token); setAdminToken(data.token); }
       else alert(data.error);
@@ -248,8 +249,9 @@ export default function AdminDashboard() {
         <div className="bg-surface max-w-md w-full rounded-2xl p-8 shadow-xl text-center border border-gray-100">
           <span className="text-5xl">🔐</span>
           <h2 className="text-2xl font-bold text-gray-900 mt-6 mb-2">Admin Dashboard</h2>
-          <p className="text-gray-500 mb-8 text-sm">Enter the master password to access the store control center.</p>
+          <p className="text-gray-500 mb-8 text-sm">Enter your credentials to access the store control center.</p>
           <form onSubmit={handleLogin} className="space-y-4">
+            <input type="text" required value={username} onChange={e => setUsername(e.target.value)} className="w-full border border-gray-200 bg-gray-50 rounded-lg p-3 text-center focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Username" />
             <input type="password" required value={password} onChange={e => setPassword(e.target.value)} className="w-full border border-gray-200 bg-gray-50 rounded-lg p-3 text-center tracking-widest focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="••••••••" />
             <button type="submit" className="w-full btn-primary py-3">Unlock Dashboard</button>
           </form>
