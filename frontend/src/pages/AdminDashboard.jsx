@@ -181,8 +181,16 @@ export default function AdminDashboard() {
       const method = isEditing ? 'PATCH' : 'POST';
 
       const res = await fetch(endpoint, { method, headers: authHeaders, body: JSON.stringify({ ...newProduct, image: imageUrl, price: Number(newProduct.price), mrp: Number(newProduct.mrp) }) });
-      if (res.ok) { setShowAddProduct(false); setNewProduct({ name: '', category: 'veg-fruits', price: '', mrp: '', image: '📦', unit: '1 pc', in_stock: true, is_fresh: false }); setImageFile(null); setImagePreview(null); fetchProducts(); }
-      else alert('Failed to save product');
+      if (res.ok) {
+        setShowAddProduct(false);
+        setNewProduct({ name: '', category: 'veg-fruits', price: '', mrp: '', image: '📦', unit: '1 pc', in_stock: true, is_fresh: false });
+        setImageFile(null);
+        setImagePreview(null);
+        fetchProducts();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        alert('Failed to save product: ' + (errData.error || `Server error ${res.status}`));
+      }
     } catch (err) { console.error(err); alert('Error: ' + err.message); } finally { setIsUploading(false); }
   };
 
@@ -244,11 +252,11 @@ export default function AdminDashboard() {
       name: product.name,
       category: product.category,
       price: product.price,
-      mrp: product.originalPrice || product.price,
+      mrp: product.mrp || product.price,   // fixed: was product.originalPrice which doesn't exist
       image: product.image,
       unit: product.unit,
       in_stock: product.inStock,
-      is_fresh: product.tags?.includes('fresh') || false
+      is_fresh: product.isFresh || product.tags?.includes('fresh') || false
     });
     setImageFile(null);
     setImagePreview(null);
