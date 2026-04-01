@@ -74,15 +74,15 @@ export default function ProductDetail() {
       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
 
         {/* Image */}
-        <div className="relative bg-gray-50 flex items-center justify-center p-8" style={{ minHeight: 260 }}>
+        <div className="relative bg-gray-50 flex items-center justify-center p-8 overflow-hidden group" style={{ minHeight: 260 }}>
           {product.discount > 0 && (
-            <span className="absolute top-4 left-4 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded">
+            <span className="absolute top-4 left-4 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded z-10">
               {product.discount}% OFF
             </span>
           )}
           <button
             onClick={() => toggleWishlist(product.id)}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white shadow hover:shadow-md transition-all"
+            className="absolute top-4 right-4 p-2 rounded-full bg-white shadow hover:shadow-md transition-all z-10"
           >
             <Heart
               size={20}
@@ -94,10 +94,10 @@ export default function ProductDetail() {
             <img
               src={product.image}
               alt={product.name}
-              className="max-h-52 w-full object-contain"
+              className="max-h-52 w-full object-contain transition-transform duration-300 group-hover:scale-110 cursor-zoom-in"
             />
           ) : (
-            <span className="text-8xl select-none">{product.image}</span>
+            <span className="text-8xl select-none transition-transform duration-300 group-hover:scale-110 cursor-zoom-in">{product.image}</span>
           )}
 
           {!product.inStock && (
