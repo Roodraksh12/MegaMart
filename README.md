@@ -6,6 +6,7 @@
 Fresh groceries, artisanal bakery, and dairy — curated and delivered in 30 minutes.</p>
 
 <p>
+  <a href="https://supermart-blond.vercel.app/"><img src="https://img.shields.io/badge/Live%20Demo-supermart--blond.vercel.app-black?style=flat-square&logo=vercel&logoColor=white" alt="Live Demo"/></a>
   <a href="https://github.com/Roodraksh12/supermart/stargazers"><img src="https://img.shields.io/github/stars/Roodraksh12/supermart?style=flat-square&color=black" alt="Stars"/></a>
   <a href="https://github.com/Roodraksh12/supermart/issues"><img src="https://img.shields.io/github/issues/Roodraksh12/supermart?style=flat-square&color=black" alt="Issues"/></a>
   <img src="https://img.shields.io/badge/React-19-black?style=flat-square&logo=react&logoColor=white" alt="React"/>
@@ -54,7 +55,7 @@ Fresh groceries, artisanal bakery, and dairy — curated and delivered in 30 min
 - **Razorpay** — payment gateway integration
 
 ### Deployment
-- **Frontend** → [Vercel](https://vercel.com)
+- **Frontend** → [supermart-blond.vercel.app](https://supermart-blond.vercel.app/) (Vercel)
 - **Backend** → [Render](https://render.com)
 - **Database** → [Supabase](https://supabase.com)
 
@@ -224,6 +225,8 @@ All API endpoints are prefixed with `/api`.
 ## ☁️ Deployment
 
 ### Frontend → Vercel
+
+🌐 **Live:** [https://supermart-blond.vercel.app/](https://supermart-blond.vercel.app/)
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/Roodraksh12/supermart)
 
