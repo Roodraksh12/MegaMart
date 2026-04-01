@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Heart, ShoppingCart, Plus, Minus, CheckCircle, XCircle } from 'lucide-react';
 import { useStore } from '../store/useStore';
@@ -7,10 +7,37 @@ import { cn } from '../utils/cn';
 export default function ProductDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { products, cart, addToCart, updateQuantity, wishlist, toggleWishlist, toggleCart } = useStore();
+  const { products, cart, addToCart, updateQuantity, wishlist, toggleWishlist, toggleCart, fetchProducts, isProductsLoading } = useStore();
+
+  // On direct load / refresh the store may be empty — fetch if needed
+  useEffect(() => {
+    if (products.length === 0) {
+      fetchProducts();
+    }
+  }, [products.length, fetchProducts]);
 
   const product = products.find(p => String(p.id) === String(id));
 
+  // Still fetching — show a skeleton so the user never sees "not found"
+  if (isProductsLoading || (!product && products.length === 0)) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 pb-24 animate-pulse">
+        <div className="h-4 w-16 bg-gray-200 rounded mb-6" />
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+          <div className="bg-gray-100" style={{ minHeight: 260 }} />
+          <div className="p-5 space-y-3">
+            <div className="h-3 w-20 bg-gray-200 rounded" />
+            <div className="h-6 w-3/4 bg-gray-200 rounded" />
+            <div className="h-3 w-1/4 bg-gray-200 rounded" />
+            <div className="h-8 w-28 bg-gray-200 rounded mt-4" />
+            <div className="h-12 w-full bg-gray-200 rounded mt-2" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Products loaded but this ID genuinely doesn't exist
   if (!product) {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center text-center px-4">
