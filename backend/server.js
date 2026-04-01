@@ -417,20 +417,21 @@ app.patch('/api/admin/products/:id', verifyAdmin, async (req, res) => {
   }
 
   // Recalculate discount if price/mrp are updated
-  if (updatePayload.price !== undefined || updatePayload.mrp !== undefined) {
-    // Fetch current to calculate properly if one is missing, but usually both are passed in an edit form.
-    // For safety, assume the edit form passes the whole object.
-    if (price !== undefined && mrp !== undefined) {
-        updatePayload.discount_percent = mrp > price ? Math.round(((mrp - price) / mrp) * 100) : 0;
-    }
+  // NOTE: the Supabase column is called 'discount', not 'discount_percent'
+  if (price !== undefined && mrp !== undefined) {
+    updatePayload.discount = Number(mrp) > Number(price)
+      ? Math.round(((Number(mrp) - Number(price)) / Number(mrp)) * 100)
+      : 0;
   }
 
   // Tags recalculation if modifying category or is_fresh
-  if (category !== undefined || is_fresh !== undefined) {
-    const finalCategory = category !== undefined ? category : req.body.category_fallback; 
-    const finalFresh = is_fresh !== undefined ? is_fresh : req.body.is_fresh_fallback;
-    if (finalCategory) {
-       updatePayload.tags = finalFresh ? [finalCategory, 'fresh'] : [finalCategory];
+  const finalCategory = category !== undefined ? category : undefined;
+  const finalFresh = is_fresh !== undefined ? Boolean(is_fresh) : undefined;
+  if (finalCategory !== undefined || finalFresh !== undefined) {
+    const cat = finalCategory || '';
+    const fresh = finalFresh || false;
+    if (cat) {
+      updatePayload.tags = fresh ? [cat, 'fresh'] : [cat];
     }
   }
 
