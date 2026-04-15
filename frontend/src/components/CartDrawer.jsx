@@ -83,63 +83,64 @@ export default function CartDrawer() {
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.5 }}
+            animate={{ opacity: 0.45 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-on-surface/40 backdrop-blur-sm z-50"
             onClick={toggleCart}
           />
           
-          {/* Drawer */}
+          {/* Drawer — "The Harvest Drawer" */}
           <motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white border-l border-black/10 z-50 flex flex-col"
+            className="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-surface z-50 flex flex-col shadow-ambient-lg"
           >
             {/* Header */}
-            <div className="p-6 border-b border-black flex justify-between items-center bg-white">
+            <div className="p-6 border-b border-surface-container flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <ShoppingBag className="text-black" size={20} />
-                <h2 className="font-bold text-[13px] uppercase tracking-widest text-black">Bag</h2>
-                <span className="text-black text-[13px] font-bold">
-                  ({cart.length})
+                <ShoppingBag className="text-primary" size={20} strokeWidth={1.8} />
+                <h2 className="font-headline font-bold text-lg text-on-surface tracking-tight">Your Basket</h2>
+                <span className="chip bg-surface-container text-on-surface-variant ml-1">
+                  {cart.length}
                 </span>
               </div>
               <button 
                 onClick={toggleCart} 
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 hover:bg-surface-container-low rounded-full transition-colors text-on-surface-variant hover:text-on-surface"
+                aria-label="Close cart"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
 
             {/* Savings Banner */}
             {savings > 0 && (
-              <div className="bg-green-50 border-b border-green-100 p-2 flex items-center justify-center gap-2">
-                <span className="text-xl">🎉</span>
-                <p className="text-sm font-medium text-green-700">
-                  You're saving <span className="font-bold border-b border-green-700">₹{savings.toFixed(2)}</span> on this order!
+              <div className="bg-secondary-container px-4 py-2.5 flex items-center justify-center gap-2">
+                <span className="text-lg">🎉</span>
+                <p className="text-sm font-body font-semibold text-on-secondary-container">
+                  You're saving <span className="font-bold">₹{savings.toFixed(2)}</span> on this order!
                 </p>
               </div>
             )}
 
             {/* Delivery progress bar */}
             {cart.length > 0 && (
-              <div className="px-6 py-4 bg-gray-50 border-b border-black/10">
+              <div className="px-6 py-4 bg-surface-container-low">
                 {isDeliveryFree ? (
-                  <div className="flex items-center gap-2 text-black">
+                  <div className="flex items-center gap-2 text-primary">
                     <CheckCircle size={15} className="flex-shrink-0" />
-                    <p className="text-[11px] font-bold uppercase tracking-widest">Free Delivery Unlocked</p>
+                    <p className="text-[11px] font-bold font-label uppercase tracking-widest">Free Delivery Unlocked</p>
                   </div>
                 ) : (
-                  <p className="text-[11px] text-gray-500 mb-2 font-bold uppercase tracking-widest">
-                    Add <span className="text-black">₹{amountToFreeDelivery}</span> for <span className="text-black">Free Delivery</span>
+                  <p className="text-[11px] text-on-surface-variant mb-2 font-label font-bold uppercase tracking-widest">
+                    Add <span className="text-on-surface font-bold">₹{amountToFreeDelivery}</span> for <span className="text-primary font-bold">Free Delivery</span>
                   </p>
                 )}
-                <div className="h-0.5 bg-gray-200 w-full mt-2">
+                <div className="h-1 bg-surface-container-high w-full mt-2 rounded-full overflow-hidden">
                   <motion.div
-                    className="h-full bg-black"
+                    className="h-full bg-primary rounded-full"
                     initial={{ width: 0 }}
                     animate={{ width: `${progressPercent}%` }}
                     transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -149,64 +150,65 @@ export default function CartDrawer() {
             )}
 
             {/* Cart Items */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {cart.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center space-y-4 text-text-muted opacity-60">
-                  <ShoppingBag size={64} className="mb-4" />
-                  <h3 className="text-xl font-medium text-text-dark hidden sm:block">Your cart is empty</h3>
-                  <p>Looks like you haven't made your choice yet...</p>
+                <div className="h-full flex flex-col items-center justify-center text-center gap-4">
+                  <ShoppingBag size={56} className="text-outline mb-2" strokeWidth={1} />
+                  <h3 className="text-xl font-headline font-bold text-on-surface">Your pantry is empty</h3>
+                  <p className="text-on-surface-variant font-body text-sm">Add some fresh picks to get started.</p>
                   <button 
                     onClick={toggleCart}
-                    className="mt-6 btn-outline"
+                    className="mt-2 btn-secondary"
                   >
                     Start Shopping
                   </button>
                 </div>
               ) : (
                 cart.map((item) => (
-                  <div key={item.id} className="flex gap-4 p-4 bg-white border-b border-black/5">
-                    <Link to={`/product/${item.id}`} onClick={toggleCart} className="w-20 h-24 flex items-center justify-center bg-[#FAFAFA] flex-shrink-0 mix-blend-multiply">
+                  <div key={item.id} className="flex gap-4 p-4 bg-surface-container-lowest rounded-xl">
+                    <Link to={`/product/${item.id}`} onClick={toggleCart} className="w-18 h-20 min-w-[72px] flex items-center justify-center bg-surface-container-low rounded-xl flex-shrink-0">
                       {item.image?.startsWith('http')
-                        ? <img src={item.image} alt={item.name} className="w-full h-full object-contain rounded-lg" />
-                        : item.image}
+                        ? <img src={item.image} alt={item.name} className="w-full h-full object-contain rounded-xl p-2" />
+                        : <span className="text-3xl">{item.image}</span>}
                     </Link>
                     <div className="flex-1 flex flex-col justify-between">
                       <div className="flex justify-between items-start">
                         <div>
-                          <h4 className="font-medium text-sm text-text-dark line-clamp-2 leading-tight">{item.name}</h4>
-                          <span className="text-xs text-text-muted">{item.unit}</span>
+                          <h4 className="font-headline font-bold text-sm text-on-surface line-clamp-2 leading-tight">{item.name}</h4>
+                          <span className="text-xs text-on-surface-variant font-body">{item.unit}</span>
                         </div>
                         <button 
                           onClick={() => removeFromCart(item.id)}
-                          className="text-gray-400 hover:text-red-500 transition-colors"
+                          className="text-outline hover:text-error transition-colors p-1"
+                          aria-label="Remove item"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={15} strokeWidth={1.5} />
                         </button>
                       </div>
                       
                       <div className="flex justify-between items-center mt-2">
-                        <div className="flex items-center gap-1">
-                          <span className="font-bold text-text-dark">₹{item.price}</span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-on-surface text-sm">₹{item.price}</span>
                           {item.mrp > item.price && (
-                            <span className="text-xs text-text-muted line-through">₹{item.mrp}</span>
+                            <span className="text-xs text-on-surface-variant line-through">₹{item.mrp}</span>
                           )}
                         </div>
                         
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 bg-surface-container rounded-lg px-2 py-1">
                           <button 
-                            className="text-black hover:text-gray-500 transition-colors"
+                            className="text-on-surface hover:text-primary transition-colors"
                             onClick={() => updateQuantity(item.id, item.quantity - 1)}
                           >
-                            <Minus size={14} strokeWidth={2} />
+                            <Minus size={13} strokeWidth={2} />
                           </button>
-                          <span className="text-[12px] font-bold text-black w-4 text-center">
+                          <span className="text-xs font-bold text-on-surface w-4 text-center">
                             {item.quantity}
                           </span>
                           <button 
-                            className="text-black hover:text-gray-500 transition-colors"
+                            className="text-on-surface hover:text-primary transition-colors"
                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
                           >
-                            <Plus size={14} strokeWidth={2} />
+                            <Plus size={13} strokeWidth={2} />
                           </button>
                         </div>
                       </div>
@@ -218,70 +220,70 @@ export default function CartDrawer() {
 
             {/* Footer / Checkout */}
             {cart.length > 0 && (
-              <div className="border-t-2 border-black bg-white p-6 space-y-4">
+              <div className="border-t border-surface-container bg-surface-container-low p-6 space-y-4">
 
                 {/* Promo Code Input */}
                 <div>
                   {appliedPromo ? (
-                    <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-lg px-3 py-2">
+                    <div className="flex items-center justify-between bg-primary-container rounded-xl px-3 py-2.5">
                       <div className="flex items-center gap-2">
-                        <Tag size={14} className="text-green-600" />
-                        <span className="text-sm font-bold text-green-700">{appliedPromo.code}</span>
-                        <span className="text-xs text-green-600">− ₹{appliedPromo.discount} off</span>
+                        <Tag size={14} className="text-primary" />
+                        <span className="text-sm font-bold text-on-primary-container">{appliedPromo.code}</span>
+                        <span className="text-xs text-on-primary-container/70">− ₹{appliedPromo.discount} off</span>
                       </div>
-                      <button onClick={removePromo} className="text-gray-400 hover:text-red-500 transition-colors">
+                      <button onClick={removePromo} className="text-on-primary-container/50 hover:text-error transition-colors" aria-label="Remove promo">
                         <X size={14} />
                       </button>
                     </div>
                   ) : (
                     <div className="flex gap-2">
                       <div className="relative flex-1">
-                        <Tag size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                        <Tag size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-outline" />
                         <input
                           type="text"
                           placeholder="Promo code"
                           value={promoCode}
                           onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); setPromoStatus(null); }}
                           onKeyDown={e => e.key === 'Enter' && applyPromo()}
-                          className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-primary/30 bg-gray-50 focus:bg-white transition-all"
+                          className="w-full pl-8 pr-3 py-2.5 text-sm bg-surface-container-lowest rounded-xl focus:outline-none focus:ring-1 focus:ring-primary transition-all font-body text-on-surface placeholder:text-outline"
                         />
                       </div>
                       <button
                         onClick={applyPromo}
                         disabled={promoStatus === 'loading' || !promoCode.trim()}
-                        className="px-4 py-2 bg-primary text-white text-sm font-medium rounded-full hover:bg-primary-dark transition-all disabled:opacity-50 flex items-center gap-1 active:scale-95 shadow-soft"
+                        className="btn-primary px-4 py-2 text-sm rounded-xl disabled:opacity-50 flex items-center gap-1 active:scale-95"
                       >
                         {promoStatus === 'loading' ? <Loader size={14} className="animate-spin" /> : 'Apply'}
                       </button>
                     </div>
                   )}
                   {promoStatus === 'error' && (
-                    <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                    <p className="text-xs text-error mt-1.5 flex items-center gap-1">
                       <XCircle size={11} /> {promoError}
                     </p>
                   )}
                 </div>
 
                 {/* Bill summary */}
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-sm text-text-muted">
+                <div className="space-y-2 bg-surface-container-lowest rounded-xl p-4">
+                  <div className="flex justify-between text-sm text-on-surface-variant font-body">
                     <span>Subtotal</span>
                     <span>₹{total.toFixed(2)}</span>
                   </div>
                   {promoDiscount > 0 && (
-                    <div className="flex justify-between text-sm text-green-600 font-medium">
+                    <div className="flex justify-between text-sm text-primary font-semibold">
                       <span>Promo ({appliedPromo.code})</span>
                       <span>− ₹{promoDiscount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm text-text-muted">
+                  <div className="flex justify-between text-sm text-on-surface-variant font-body">
                     <span>Delivery</span>
                     {isDeliveryFree
-                      ? <span className="text-green-600 font-medium">FREE</span>
+                      ? <span className="text-primary font-semibold">FREE</span>
                       : <span>₹{deliveryFee.toFixed(2)}</span>
                     }
                   </div>
-                  <div className="flex justify-between text-lg font-bold text-text-dark pt-2 border-t border-dashed border-gray-200">
+                  <div className="flex justify-between text-lg font-headline font-bold text-on-surface pt-2 border-t border-surface-container">
                     <span>To Pay</span>
                     <span>₹{grandTotal.toFixed(2)}</span>
                   </div>
@@ -289,7 +291,7 @@ export default function CartDrawer() {
 
                 <button 
                   onClick={handleCheckout}
-                  className="w-full btn-primary flex justify-center items-center gap-2 py-3 rounded-xl shadow-lg shadow-primary/20"
+                  className="w-full btn-primary flex justify-center items-center gap-2 py-3.5 rounded-xl"
                 >
                   Proceed to Checkout
                   <ChevronRight size={18} />

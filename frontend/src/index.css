@@ -1,59 +1,71 @@
+@import url('https://fonts.googleapis.com/css2?family=Epilogue:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    @apply text-black font-sans antialiased selection:bg-black selection:text-white bg-white;
+    @apply bg-surface text-on-surface font-body antialiased;
+    selection-color: #f1faee;
+    -webkit-tap-highlight-color: transparent;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-headline;
+  }
+  * {
+    @apply selection:bg-primary selection:text-on-primary;
   }
 }
 
 @layer components {
+  /* ── Stitch Buttons ── */
   .btn-primary {
-    @apply bg-black text-white px-6 py-3 text-[11px] font-bold uppercase tracking-widest transition-colors hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-primary text-on-primary px-6 py-3 text-sm font-bold rounded-lg
+           hover:bg-primary-dim transition-colors disabled:opacity-40 disabled:cursor-not-allowed;
   }
-  
   .btn-secondary {
-    @apply bg-transparent text-black px-6 py-3 text-[11px] font-bold uppercase tracking-widest border border-black transition-colors hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-surface-container-high text-on-surface px-6 py-3 text-sm font-semibold rounded-lg
+           hover:bg-surface-container-highest transition-colors disabled:opacity-40 disabled:cursor-not-allowed;
   }
-  
   .btn-outline {
-    @apply border-b-2 border-black text-black pb-1 text-[11px] font-bold uppercase tracking-widest transition-colors hover:text-gray-500 hover:border-gray-500 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply border border-outline-variant text-on-surface px-6 py-3 text-sm font-semibold rounded-lg
+           hover:bg-surface-container-low transition-colors;
   }
 
-  /* The card is dead; products float on the canvas */
-  .card {
-    @apply bg-transparent border-none shadow-none;
+  /* Stitch Product Card */
+  .stitch-card {
+    @apply group bg-surface-container-low rounded-xl overflow-hidden
+           transition-all duration-300
+           hover:bg-surface-container-lowest hover:shadow-ambient;
+  }
+
+  /* Chip / badge */
+  .chip {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest;
   }
 }
 
-/* Remove glass utilities */
-.bg-glass {
-  @apply bg-transparent;
-}
-
-/* Hide scrollbar utility */
+/* ── Hide scrollbar ── */
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-.hide-scrollbar::-webkit-scrollbar {
-  display: none;
-}
+.hide-scrollbar::-webkit-scrollbar { display: none; }
 
-/* Skeleton shimmer */
+/* ── Skeleton shimmer ── */
 .skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, #edeeeb 25%, #e4e6e3 50%, #edeeeb 75%);
   background-size: 800px 100%;
   animation: shimmer 1.4s infinite linear;
 }
 
 @keyframes shimmer {
-  0% { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
 }
 
-/* Print styles — only invoice section prints */
+/* ── Print ── */
 @media print {
   body * { visibility: hidden; }
   #invoice-section,
@@ -69,12 +81,23 @@
   }
 }
 
-/* Toast slide-up animation */
+/* ── Toast ── */
 @keyframes slide-up {
   from { opacity: 0; transform: translateY(16px) scale(0.95); }
-  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
 .animate-slide-up {
   animation: slide-up 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
+/* ── Fade in ── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out both;
+}
+
+/* ── Active scale tap ── */
+.active\:scale-90:active { transform: scale(0.9); }

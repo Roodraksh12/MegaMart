@@ -11,16 +11,28 @@ import {
   updateProfile
 } from 'firebase/auth';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { supabase } from '../lib/supabase';
 
-async function exchangeFirebaseToken(firebaseUser) {
-  const idToken = await firebaseUser.getIdToken();
-  const res = await fetch(`${API_URL}/api/auth/firebase`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ idToken })
-  });
-  return res.json();
+async function syncSupabaseUser(firebaseUser) {
+  const id = firebaseUser.uid;
+  const { data, error } = await supabase
+    .from('users')
+    .upsert({
+      id: id,
+      firebase_uid: id,
+      name: firebaseUser.displayName || (firebaseUser.email ? firebaseUser.email.split('@')[0] : 'User'),
+      phone: firebaseUser.phoneNumber || '',
+      avatar: firebaseUser.photoURL || ''
+    }, { onConflict: 'firebase_uid' })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Supabase sync error:', error);
+    return { error: error.message };
+  }
+  
+  return { user: data, token: firebaseUser.accessToken };
 }
 
 export default function AuthModal() {
@@ -38,7 +50,7 @@ export default function AuthModal() {
   const [password, setPassword] = useState('');
 
   const handleSuccess = async (firebaseUser) => {
-    const data = await exchangeFirebaseToken(firebaseUser);
+    const data = await syncSupabaseUser(firebaseUser);
     if (data.user) {
       login(data.user);
       localStorage.setItem('token', data.token);

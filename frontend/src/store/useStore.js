@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { supabase } from '../lib/supabase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -12,10 +13,9 @@ export const useStore = create(
       fetchProducts: async () => {
         if (get().products.length === 0) set({ isProductsLoading: true });
         try {
-          const res = await fetch(`${API_URL}/api/products`);
-          const data = await res.json();
-          // Ensure data is an array
-          set({ products: Array.isArray(data) ? data : [], isProductsLoading: false });
+          const { data, error } = await supabase.from('products').select('*');
+          if (error) throw error;
+          set({ products: data || [], isProductsLoading: false });
         } catch (error) {
           console.error("Failed to fetch products", error);
           set({ products: [], isProductsLoading: false });
@@ -132,9 +132,37 @@ export const useStore = create(
       addOrder: (order) => set((state) => ({ orders: [order, ...state.orders] })),
       fetchUserOrders: async (userId) => {
         try {
-          const res = await fetch(`${API_URL}/api/orders/user/${userId}`);
-          const data = await res.json();
-          set({ orders: Array.isArray(data) ? data : [] });
+          const { data, error } = await supabase
+            .from('orders')
+            .select(`
+              *,
+              items:order_items (
+                id,
+                quantity,
+                price_at_time,
+                product:products (id, name, image, unit, price)
+              )
+            `)
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
+
+          if (error) throw error;
+
+          const mappedOrders = (data || []).map(order => ({
+            ...order,
+            date: order.created_at,
+            total: order.total_amount,
+            items: (order.items || []).map(item => ({
+               id: item.product?.id,
+               name: item.product?.name,
+               image: item.product?.image,
+               unit: item.product?.unit,
+               quantity: item.quantity,
+               price: item.price_at_time
+            }))
+          }));
+
+          set({ orders: mappedOrders });
         } catch (err) {
           console.error("Failed to sync orders", err);
         }
@@ -143,16 +171,16 @@ export const useStore = create(
         const { user } = get();
         if (!user) return false;
         try {
-          const res = await fetch(`${API_URL}/api/orders/${orderId}/cancel`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ userId: user.id })
-          });
-          if (res.ok) {
-            get().fetchUserOrders(user.id);
-            return true;
-          }
-          return false;
+          const { error } = await supabase
+            .from('orders')
+            .update({ status: 'Cancelled' })
+            .eq('id', orderId)
+            .eq('user_id', user.id);
+            
+          if (error) throw error;
+          
+          get().fetchUserOrders(user.id);
+          return true;
         } catch (err) {
           console.error("Failed to cancel order", err);
           return false;

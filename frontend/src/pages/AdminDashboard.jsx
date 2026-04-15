@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { CheckCircle, Clock, Truck, ShieldCheck, Eye, EyeOff, Tag, Settings, Trash2, Plus, RefreshCw, User } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
+import { supabase } from '../lib/supabase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -71,10 +72,19 @@ export default function AdminDashboard() {
   async function fetchOrders() {
     try {
       setIsLoading(true);
-      const res = await fetch(`${API_URL}/api/admin/orders`, { headers: { 'Authorization': `Bearer ${adminToken}` } });
-      if (!res.ok) { if (res.status === 401 || res.status === 403) setAdminToken(null); return; }
-      const data = await res.json();
-      setAllOrders(Array.isArray(data) ? data : []);
+      const { data, error } = await supabase.from('orders').select('*, items:order_items(*, product:products(*))').order('created_at', { ascending: false });
+      if (error) throw error;
+      const mappedOrders = (data || []).map(order => ({
+        ...order,
+        items: (order.items || []).map(item => ({
+           id: item.product?.id,
+           name: item.product?.name,
+           image: item.product?.image,
+           quantity: item.quantity,
+           price: item.price_at_time
+        }))
+      }));
+      setAllOrders(mappedOrders);
     } catch (err) { console.error(err); } finally { setIsLoading(false); }
   }
 
@@ -133,24 +143,23 @@ export default function AdminDashboard() {
   // ── Handlers ──────────────────────────────────────
   const handleLogin = async (e) => {
     e.preventDefault();
-    try {
-      const res = await fetch(`${API_URL}/api/auth/admin-login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
-      const data = await res.json();
-      if (data.token) { sessionStorage.setItem('adminToken', data.token); setAdminToken(data.token); }
-      else alert(data.error);
-    } catch (err) { console.error(err); }
+    if (username === 'admin' && password === 'admin123') {
+      sessionStorage.setItem('adminToken', 'mock-admin-token'); setAdminToken('mock-admin-token');
+    } else {
+      alert('Invalid admin credentials. (Hint: admin / admin123)');
+    }
   };
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
     try {
-      await fetch(`${API_URL}/api/admin/orders/${orderId}`, { method: 'PATCH', headers: authHeaders, body: JSON.stringify({ status: newStatus }) });
+      await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
       setAllOrders(orders => orders.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
     } catch (err) { console.error(err); }
   };
 
   const handleToggleStock = async (productId, currentIsStocked) => {
     try {
-      await fetch(`${API_URL}/api/admin/products/${productId}`, { method: 'PATCH', headers: authHeaders, body: JSON.stringify({ in_stock: !currentIsStocked }) });
+      await supabase.from('products').update({ in_stock: !currentIsStocked }).eq('id', productId);
       fetchProducts();
     } catch (err) { console.error(err); }
   };
@@ -168,29 +177,37 @@ export default function AdminDashboard() {
     try {
       let imageUrl = newProduct.image;
       if (imageFile) {
-        const reader = new FileReader();
-        const base64 = await new Promise((resolve, reject) => { reader.onload = () => resolve(reader.result.split(',')[1]); reader.onerror = reject; reader.readAsDataURL(imageFile); });
-        const uploadRes = await fetch(`${API_URL}/api/admin/upload-image`, { method: 'POST', headers: authHeaders, body: JSON.stringify({ base64, fileName: imageFile.name, mimeType: imageFile.type }) });
-        const uploadData = await uploadRes.json();
-        if (!uploadRes.ok) throw new Error(uploadData.error || 'Image upload failed');
-        imageUrl = uploadData.url;
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage.from('product-images').upload(fileName, imageFile);
+        if (uploadError) throw uploadError;
+        const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(fileName);
+        imageUrl = publicUrl;
       }
       
-      const isEditing = !!newProduct.id;
-      const endpoint = isEditing ? `${API_URL}/api/admin/products/${newProduct.id}` : `${API_URL}/api/admin/products`;
-      const method = isEditing ? 'PATCH' : 'POST';
+      const payload = {
+        name: newProduct.name,
+        category: newProduct.category,
+        price: Number(newProduct.price),
+        mrp: Number(newProduct.mrp),
+        image: imageUrl,
+        unit: newProduct.unit,
+        in_stock: newProduct.in_stock,
+        is_fresh: newProduct.is_fresh
+      };
 
-      const res = await fetch(endpoint, { method, headers: authHeaders, body: JSON.stringify({ ...newProduct, image: imageUrl, price: Number(newProduct.price), mrp: Number(newProduct.mrp) }) });
-      if (res.ok) {
-        setShowAddProduct(false);
-        setNewProduct({ name: '', category: 'veg-fruits', price: '', mrp: '', image: '📦', unit: '1 pc', in_stock: true, is_fresh: false });
-        setImageFile(null);
-        setImagePreview(null);
-        fetchProducts();
+      if (newProduct.id) {
+        await supabase.from('products').update(payload).eq('id', newProduct.id);
       } else {
-        const errData = await res.json().catch(() => ({}));
-        alert('Failed to save product: ' + (errData.error || `Server error ${res.status}`));
+        const newId = `p${Math.floor(Math.random() * 999999)}`;
+        await supabase.from('products').insert({ ...payload, id: newId });
       }
+
+      setShowAddProduct(false);
+      setNewProduct({ name: '', category: 'veg-fruits', price: '', mrp: '', image: '📦', unit: '1 pc', in_stock: true, is_fresh: false });
+      setImageFile(null);
+      setImagePreview(null);
+      fetchProducts();
     } catch (err) { console.error(err); alert('Error: ' + err.message); } finally { setIsUploading(false); }
   };
 
@@ -209,6 +226,7 @@ export default function AdminDashboard() {
       const cols = line.split(',').map(c => c.trim());
       if (cols.length >= 3) {
         payloadProducts.push({
+          id: `p${Math.floor(Math.random() * 999999) + Date.now()}`,
           name: cols[0],
           category: cols[1] || 'veg-fruits',
           price: Number(cols[2]) || 0,
@@ -227,22 +245,15 @@ export default function AdminDashboard() {
     }
 
     try {
-      const res = await fetch(`${API_URL}/api/admin/products/bulk`, {
-        method: 'POST',
-        headers: authHeaders,
-        body: JSON.stringify({ products: payloadProducts })
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setBulkStatus({ loading: false, msg: `✅ ${data.message || 'Success!'}`, isError: false });
-        setBulkText('');
-        fetchProducts();
-        setTimeout(() => setShowBulkAdd(false), 2000);
-      } else {
-        setBulkStatus({ loading: false, msg: data.error || 'Failed to bulk add', isError: true });
-      }
+      const { error } = await supabase.from('products').insert(payloadProducts);
+      if (error) throw error;
+      
+      setBulkStatus({ loading: false, msg: `✅ Success!`, isError: false });
+      setBulkText('');
+      fetchProducts();
+      setTimeout(() => setShowBulkAdd(false), 2000);
     } catch (err) {
-      setBulkStatus({ loading: false, msg: 'Network error', isError: true });
+      setBulkStatus({ loading: false, msg: 'Network error: ' + err.message, isError: true });
     }
   };
 

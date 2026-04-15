@@ -286,8 +286,8 @@ function OrderCard({ order }) {
       {showInvoice && <InvoiceModal order={order} onClose={() => setShowInvoice(false)} />}
 
       <div className={cn(
-        "bg-surface border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row gap-6 transition-all",
-        order.status === 'Cancelled' ? 'opacity-60 border-red-200' : 'border-gray-200'
+        "bg-surface-container-low rounded-3xl p-6 shadow-ambient flex flex-col md:flex-row gap-6 transition-all border-none",
+        order.status === 'Cancelled' ? 'opacity-60 ring-1 ring-error-container' : ''
       )}>
 
         <div className="flex-1 space-y-4">

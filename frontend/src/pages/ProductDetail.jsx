@@ -60,128 +60,140 @@ export default function ProductDetail() {
   const savings = product.mrp > product.price ? product.mrp - product.price : 0;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-6 pb-24">
-      {/* Back button */}
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-primary transition-colors mb-6"
-      >
-        <ArrowLeft size={16} />
-        Back
-      </button>
-
-      {/* Product card */}
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-
-        {/* Image */}
-        <div className="relative bg-gray-50 flex items-center justify-center p-8 overflow-hidden group" style={{ minHeight: 260 }}>
-          {product.discount > 0 && (
-            <span className="absolute top-4 left-4 bg-green-600 text-white text-xs font-bold px-2 py-1 rounded z-10">
-              {product.discount}% OFF
-            </span>
-          )}
+    <div className="bg-surface min-h-screen pb-32">
+      {/* Full Bleed Image Header */}
+      <div className="relative bg-surface-container-low h-[50vh] sm:h-[60vh] md:h-[500px] w-full flex items-center justify-center overflow-hidden rounded-b-3xl sm:rounded-none">
+        
+        {/* Top Actions overlay */}
+        <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-center z-20">
+          <button
+            onClick={() => navigate(-1)}
+            className="p-2.5 bg-surface/80 backdrop-blur-2xl rounded-full text-on-surface shadow-soft hover:scale-95 transition-transform"
+          >
+            <ArrowLeft size={20} />
+          </button>
           <button
             onClick={() => toggleWishlist(product.id)}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white shadow hover:shadow-md transition-all z-10"
+            className="p-2.5 bg-surface/80 backdrop-blur-2xl rounded-full shadow-soft hover:scale-95 transition-transform"
           >
             <Heart
               size={20}
-              className={isWishlisted ? 'fill-red-500 text-red-500' : 'text-gray-400'}
+              className={isWishlisted ? 'fill-error text-error' : 'text-on-surface'}
             />
           </button>
+        </div>
 
+        {/* Badges */}
+        {product.discount > 0 && (
+          <span className="absolute bottom-6 left-6 bg-tertiary-container text-on-tertiary-container text-xs font-bold px-3 py-1.5 rounded-full z-20 shadow-soft">
+            {product.discount}% OFF
+          </span>
+        )}
+
+        {/* Imagery */}
+        <div className="relative z-10 w-full h-full flex items-center justify-center p-12">
           {product.image?.startsWith('http') ? (
             <img
               src={product.image}
               alt={product.name}
-              className="max-h-52 w-full object-contain transition-transform duration-300 group-hover:scale-110 cursor-zoom-in"
+              className="h-full object-contain drop-shadow-2xl transition-transform duration-500 hover:scale-105"
             />
           ) : (
-            <span className="text-8xl select-none transition-transform duration-300 group-hover:scale-110 cursor-zoom-in">{product.image}</span>
-          )}
-
-          {!product.inStock && (
-            <div className="absolute inset-0 bg-white/75 flex items-center justify-center">
-              <span className="text-sm font-semibold text-gray-500 bg-white border border-gray-200 px-3 py-1.5 rounded-full">
-                Out of Stock
-              </span>
-            </div>
+            <span className="text-[120px] sm:text-[180px] drop-shadow-2xl transition-transform duration-500 hover:scale-105 select-none text-center">
+              {product.image}
+            </span>
           )}
         </div>
+      </div>
 
-        {/* Details */}
-        <div className="p-5">
-          <p className="text-xs text-gray-400 mb-1 uppercase tracking-wide">{product.category}</p>
-          <h1 className="text-xl font-bold text-gray-900 leading-snug mb-1">{product.name}</h1>
-          <p className="text-sm text-gray-500 mb-4">{product.unit}</p>
+      {/* Editorial Content */}
+      <div className="max-w-4xl mx-auto px-6 pt-8">
+        
+        {/* Meta & Title */}
+        <div className="mb-8">
+          <span className="chip bg-surface-container-high text-on-surface mb-4">{product.category}</span>
+          <h1 className="text-4xl sm:text-5xl font-headline font-bold text-on-surface leading-[1.1] tracking-tight mb-2">
+            {product.name}
+          </h1>
+          <p className="text-lg font-body text-on-surface-variant">{product.unit}</p>
+        </div>
 
-          {/* Stock indicator */}
-          <div className="flex items-center gap-1.5 mb-5">
+        {/* Pricing Segment */}
+        <div className="flex items-end justify-between border-b border-surface-container pb-6 mb-6">
+          <div className="flex flex-col">
+            <span className="text-sm font-label uppercase tracking-widest text-on-surface-variant mb-1">Our Price</span>
+            <div className="flex items-baseline gap-3">
+              <span className="text-4xl font-bold font-headline text-on-surface">₹{product.price}</span>
+              {product.mrp > product.price && (
+                <span className="text-lg text-outline line-through font-body">₹{product.mrp}</span>
+              )}
+            </div>
+            {product.mrp > product.price && (
+              <span className="text-sm font-bold text-primary mt-1">You save ₹{savings}</span>
+            )}
+          </div>
+          
+          <div className="flex flex-col items-end gap-1.5">
             {product.inStock ? (
               <>
-                <CheckCircle size={14} className="text-green-600" />
-                <span className="text-xs text-green-600 font-medium">In Stock</span>
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container">
+                  <CheckCircle size={16} strokeWidth={2.5} />
+                </div>
+                <span className="text-xs font-bold text-on-surface">In Stock</span>
               </>
             ) : (
               <>
-                <XCircle size={14} className="text-red-400" />
-                <span className="text-xs text-red-400 font-medium">Out of Stock</span>
+                <div className="flex items-center justify-center w-8 h-8 rounded-full bg-error-container text-on-error-container">
+                  <XCircle size={16} strokeWidth={2.5} />
+                </div>
+                <span className="text-xs font-bold text-error">Out of Stock</span>
               </>
             )}
           </div>
+        </div>
 
-          {/* Price row */}
-          <div className="flex items-end gap-3 mb-6">
-            <span className="text-3xl font-bold text-gray-900">₹{product.price}</span>
-            {product.mrp > product.price && (
-              <>
-                <span className="text-lg text-gray-400 line-through mb-0.5">₹{product.mrp}</span>
-                <span className="text-sm font-semibold text-green-600 mb-0.5">Save ₹{savings}</span>
-              </>
-            )}
-          </div>
-
-          {/* Add to Cart */}
-          {quantity === 0 ? (
-            <button
-              onClick={() => addToCart(product.id, 1)}
-              disabled={!product.inStock}
-              className={cn(
-                'w-full flex items-center justify-center gap-2 py-3 rounded-lg text-sm font-semibold transition-colors',
-                product.inStock
-                  ? 'bg-primary text-white hover:bg-primary-dark'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              )}
-            >
-              <ShoppingCart size={18} />
-              Add to Cart
-            </button>
-          ) : (
-            <div className="flex items-center gap-4">
-              <div className="flex items-center border-2 border-primary rounded-lg overflow-hidden">
+        {/* Sticky-ish Add to Cart Bottom Bar on Mobile, static on Desktop */}
+        <div className="fixed sm:static bottom-0 left-0 right-0 p-4 sm:p-0 bg-surface/90 sm:bg-transparent backdrop-blur-xl sm:backdrop-blur-none border-t border-surface-container sm:border-none z-30 pb-[max(env(safe-area-inset-bottom),16px)] sm:pb-0">
+          <div className="max-w-4xl mx-auto flex gap-4">
+            {quantity === 0 ? (
+              <button
+                onClick={() => addToCart(product.id, 1)}
+                disabled={!product.inStock}
+                className={cn(
+                  'w-full btn-primary h-14 text-base shadow-ambient flex items-center justify-center gap-2',
+                  !product.inStock && 'opacity-50 cursor-not-allowed bg-surface-container-highest text-on-surface-variant'
+                )}
+              >
+                <ShoppingCart size={20} className="mb-0.5" />
+                Add to Cart
+              </button>
+            ) : (
+              <div className="w-full flex gap-3 h-14">
+                <div className="flex items-center bg-surface-container flex-1 rounded-xl">
+                  <button
+                    className="flex-1 h-full flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors rounded-l-xl"
+                    onClick={() => updateQuantity(product.id, quantity - 1)}
+                  >
+                    <Minus size={20} />
+                  </button>
+                  <span className="w-12 text-center text-lg font-bold font-headline">{quantity}</span>
+                  <button
+                    className="flex-1 h-full flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors rounded-r-xl"
+                    onClick={() => updateQuantity(product.id, quantity + 1)}
+                  >
+                    <Plus size={20} />
+                  </button>
+                </div>
                 <button
-                  className="px-4 py-3 text-primary hover:bg-primary hover:text-white transition-colors"
-                  onClick={() => updateQuantity(product.id, quantity - 1)}
+                  onClick={toggleCart}
+                  className="flex-1 btn-primary shadow-ambient flex items-center justify-center gap-2"
                 >
-                  <Minus size={16} />
-                </button>
-                <span className="px-5 text-base font-bold text-primary">{quantity}</span>
-                <button
-                  className="px-4 py-3 text-primary hover:bg-primary hover:text-white transition-colors"
-                  onClick={() => updateQuantity(product.id, quantity + 1)}
-                >
-                  <Plus size={16} />
+                  <ShoppingCart size={20} className="mb-0.5" />
+                  View Cart
                 </button>
               </div>
-              <button
-                onClick={toggleCart}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-lg text-sm font-semibold hover:bg-primary-dark transition-colors"
-              >
-                <ShoppingCart size={16} />
-                View Cart
-              </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>

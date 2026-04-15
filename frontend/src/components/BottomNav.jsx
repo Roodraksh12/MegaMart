@@ -1,11 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, Heart, ClipboardList, ShoppingCart } from 'lucide-react';
+import { Home, Heart, ClipboardList, ShoppingBasket, Grid } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
 
 export default function BottomNav() {
-  const { getCartItemCount, toggleCart, toggleAuth, user } = useStore();
+  const { getCartItemCount, toggleCart } = useStore();
   const location = useLocation();
   const cartCount = getCartItemCount();
   const isAdmin = location.pathname.startsWith('/admin');
@@ -13,14 +13,19 @@ export default function BottomNav() {
   if (isAdmin) return null;
 
   const links = [
-    { to: '/',         icon: Home,          label: 'Home' },
-    { to: '/wishlist', icon: Heart,         label: 'Saved' },
-    { to: '/orders',   icon: ClipboardList, label: 'Orders' },
+    { to: '/',         icon: Home,          label: 'Home'    },
+    { to: '/wishlist', icon: Heart,         label: 'Saved'   },
+    { to: '/orders',   icon: ClipboardList, label: 'Orders'  },
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-black/10 pt-1 pb-[max(env(safe-area-inset-bottom),0px)]">
-      <div className="flex items-center justify-around h-[60px] px-2">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40
+                    bg-surface-container-lowest/90 backdrop-blur-2xl
+                    shadow-[0px_-8px_32px_rgba(47,51,49,0.08)]
+                    rounded-t-3xl
+                    pt-2 pb-[max(env(safe-area-inset-bottom),8px)]">
+      <div className="flex items-center justify-around px-2 h-[60px]">
+
         {links.map(({ to, icon: Icon, label }) => {
           const active = location.pathname === to;
           return (
@@ -28,31 +33,40 @@ export default function BottomNav() {
               key={to}
               to={to}
               className={cn(
-                'flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl transition-colors min-w-[56px]',
-                active ? 'text-black' : 'text-gray-400 hover:text-black'
+                'flex flex-col items-center gap-1 px-4 py-1.5 rounded-xl transition-all duration-200',
+                active
+                  ? 'text-primary bg-surface-container shadow-ambient'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'
               )}
             >
-              <Icon size={22} strokeWidth={active ? 2.5 : 1.8} />
-              <span className="text-[10px] font-semibold">{label}</span>
+              <Icon size={22} strokeWidth={active ? 2.2 : 1.6} />
+              <span className="font-label text-[10px] font-bold uppercase tracking-widest">
+                {label}
+              </span>
             </Link>
           );
         })}
 
-        {/* Cart button — centre-right */}
+        {/* Cart */}
         <button
           onClick={toggleCart}
-          className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-gray-400 hover:text-black relative min-w-[56px] transition-colors"
+          className="flex flex-col items-center gap-1 px-4 py-1.5 rounded-xl
+                     text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low
+                     transition-all duration-200 relative"
         >
           <span className="relative">
-            <ShoppingCart size={22} strokeWidth={1.8} />
+            <ShoppingBasket size={22} strokeWidth={1.6} />
             {cartCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 bg-black text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-md">
+              <span className="absolute -top-1.5 -right-1.5 bg-primary text-on-primary
+                               text-[9px] font-bold w-4 h-4 rounded-full
+                               flex items-center justify-center shadow-ambient">
                 {cartCount > 9 ? '9+' : cartCount}
               </span>
             )}
           </span>
-          <span className="text-[10px] font-semibold">Cart</span>
+          <span className="font-label text-[10px] font-bold uppercase tracking-widest">Cart</span>
         </button>
+
       </div>
     </nav>
   );

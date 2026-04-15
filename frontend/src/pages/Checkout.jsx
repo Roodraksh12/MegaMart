@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CheckCircle, Truck, Banknote, ChevronRight, PackageCheck, Tag, X, CreditCard } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
+import { supabase } from '../lib/supabase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -26,12 +27,7 @@ export default function Checkout() {
 
   // Delivery fee settings from backend
   const [deliveryConfig, setDeliveryConfig] = useState({ deliveryFee: 30, freeAbove: 150 });
-  useEffect(() => {
-    fetch(`${API_URL}/api/settings/delivery`)
-      .then(r => r.json())
-      .then(d => { if (d.deliveryFee !== undefined) setDeliveryConfig(d); })
-      .catch(() => {});
-  }, []);
+  // (Removed API call, keeping defaults until we have a settings table)
 
   // Promo code state
   const [promoInput, setPromoInput] = useState('');
@@ -67,39 +63,44 @@ export default function Checkout() {
     if (!promoInput.trim()) return;
     setPromoLoading(true);
     setPromoStatus(null);
-    try {
-      const res = await fetch(`${API_URL}/api/promo/validate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: promoInput.trim(), orderTotal: subtotal })
-      });
-      const data = await res.json();
-      if (res.ok) setPromoStatus({ valid: true, code: data.code, discount: data.discount, discountValue: data.discountValue, discountType: data.discountType });
-      else setPromoStatus({ valid: false, error: data.error });
-    } catch { setPromoStatus({ valid: false, error: 'Network error' }); }
-    setPromoLoading(false);
+    // Hardcoded simple validation since promo tables aren't in Supabase yet
+    setTimeout(() => {
+      if (promoInput.trim() === 'SUPER10' && subtotal >= 500) {
+        setPromoStatus({ valid: true, code: 'SUPER10', discount: 50, discountValue: 50, discountType: 'fixed' });
+      } else {
+        setPromoStatus({ valid: false, error: 'Invalid or expired promo code' });
+      }
+      setPromoLoading(false);
+    }, 500);
   };
 
   const handlePlaceOrder = async () => {
     setIsProcessing(true);
     try {
-      const res = await fetch(`${API_URL}/api/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          userId: user.id,
-          total,
-          address,
-          promoCode: promoStatus?.valid ? promoStatus.code : null,
-          items: cart.map(item => ({ id: item.id, quantity: item.quantity, price: item.price }))
-        })
+      const newOrderId = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
+      
+      // 1. Insert Order
+      const { error: orderError } = await supabase.from('orders').insert({
+        id: newOrderId,
+        user_id: user.id,
+        total_amount: total,
+        status: 'Processing',
+        payment_method: paymentMethod.toUpperCase(),
+        delivery_address: JSON.stringify(address)
       });
-      const data = await res.json();
-      const newOrderId = data.orderId || `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
-      setOrderId(newOrderId);
+      if (orderError) throw orderError;
+
+      // 2. Insert Order Items
+      const orderItemsData = cart.map(item => ({
+        id: `item-${Math.floor(Math.random() * 9999999)}`,
+        order_id: newOrderId,
+        product_id: item.id,
+        quantity: item.quantity,
+        price_at_time: item.price
+      }));
+
+      const { error: itemsError } = await supabase.from('order_items').insert(orderItemsData);
+      if (itemsError) throw itemsError;
       
       const order = {
         id: newOrderId,
@@ -147,7 +148,7 @@ export default function Checkout() {
       )}
 
       {/* Content */}
-      <div className="bg-surface border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8">
+      <div className="bg-surface-container-low rounded-3xl shadow-ambient p-6 sm:p-8">
         
         {/* Step 1: Delivery */}
         {step === 1 && (
@@ -156,23 +157,23 @@ export default function Checkout() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                <div>
                  <label className="block text-sm font-medium mb-1">Full Name</label>
-                 <input type="text" value={address.name} onChange={e => setAddress({...address, name: e.target.value})} className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:border-primary" />
+                 <input type="text" value={address.name} onChange={e => setAddress({...address, name: e.target.value})} className="w-full bg-surface-container-lowest border-none rounded-xl p-3.5 text-sm font-body focus:ring-1 focus:ring-primary focus:outline-none" />
                </div>
                <div>
                  <label className="block text-sm font-medium mb-1">Phone Number</label>
-                 <input type="tel" value={address.phone} onChange={e => setAddress({...address, phone: e.target.value})} className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:border-primary" />
+                 <input type="tel" value={address.phone} onChange={e => setAddress({...address, phone: e.target.value})} className="w-full bg-surface-container-lowest border-none rounded-xl p-3.5 text-sm font-body focus:ring-1 focus:ring-primary focus:outline-none" />
                </div>
                <div>
                  <label className="block text-sm font-medium mb-1">House/Flat No.</label>
-                 <input type="text" value={address.houseNo} onChange={e => setAddress({...address, houseNo: e.target.value})} className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:border-primary" />
+                 <input type="text" value={address.houseNo} onChange={e => setAddress({...address, houseNo: e.target.value})} className="w-full bg-surface-container-lowest border-none rounded-xl p-3.5 text-sm font-body focus:ring-1 focus:ring-primary focus:outline-none" />
                </div>
                <div>
                  <label className="block text-sm font-medium mb-1">Pincode</label>
-                 <input type="text" value={address.pincode} onChange={e => setAddress({...address, pincode: e.target.value})} className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:border-primary" />
+                 <input type="text" value={address.pincode} onChange={e => setAddress({...address, pincode: e.target.value})} className="w-full bg-surface-container-lowest border-none rounded-xl p-3.5 text-sm font-body focus:ring-1 focus:ring-primary focus:outline-none" />
                </div>
                <div className="md:col-span-2">
                  <label className="block text-sm font-medium mb-1">Street / Landmark</label>
-                 <input type="text" value={address.street} onChange={e => setAddress({...address, street: e.target.value})} className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:outline-none focus:border-primary" />
+                 <input type="text" value={address.street} onChange={e => setAddress({...address, street: e.target.value})} className="w-full bg-surface-container-lowest border-none rounded-xl p-3.5 text-sm font-body focus:ring-1 focus:ring-primary focus:outline-none" />
                </div>
             </div>
 
