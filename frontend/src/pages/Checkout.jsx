@@ -27,7 +27,21 @@ export default function Checkout() {
 
   // Delivery fee settings from backend
   const [deliveryConfig, setDeliveryConfig] = useState({ deliveryFee: 30, freeAbove: 150 });
-  // (Removed API call, keeping defaults until we have a settings table)
+  
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const { data } = await supabase.from('admin_settings').select('key, value').in('key', ['delivery_fee', 'free_delivery_above']);
+        const settings = {};
+        (data || []).forEach(row => { settings[row.key] = row.value; });
+        setDeliveryConfig({
+          deliveryFee: settings.delivery_fee ? Number(settings.delivery_fee) : 30,
+          freeAbove: settings.free_delivery_above ? Number(settings.free_delivery_above) : 150,
+        });
+      } catch (err) {}
+    };
+    fetchSettings();
+  }, []);
 
   // Promo code state
   const [promoInput, setPromoInput] = useState('');
@@ -63,15 +77,32 @@ export default function Checkout() {
     if (!promoInput.trim()) return;
     setPromoLoading(true);
     setPromoStatus(null);
-    // Hardcoded simple validation since promo tables aren't in Supabase yet
-    setTimeout(() => {
-      if (promoInput.trim() === 'SUPER10' && subtotal >= 500) {
-        setPromoStatus({ valid: true, code: 'SUPER10', discount: 50, discountValue: 50, discountType: 'fixed' });
-      } else {
-        setPromoStatus({ valid: false, error: 'Invalid or expired promo code' });
+    try {
+      const key = `promo_${promoInput.toUpperCase().trim()}`;
+      const { data } = await supabase.from('admin_settings').select('value').eq('key', key).single();
+      
+      if (!data) {
+        setPromoStatus({ valid: false, error: 'Invalid promo code' });
+        setPromoLoading(false);
+        return;
       }
+      
+      const promo = JSON.parse(data.value);
+      if (!promo.active) { setPromoStatus({ valid: false, error: 'This promo code is inactive' }); setPromoLoading(false); return; }
+      if (promo.expiresAt && new Date(promo.expiresAt) < new Date()) { setPromoStatus({ valid: false, error: 'Promo code has expired' }); setPromoLoading(false); return; }
+      if (promo.minOrder && subtotal < promo.minOrder) { setPromoStatus({ valid: false, error: `Minimum order ₹${promo.minOrder} required` }); setPromoLoading(false); return; }
+      if (promo.maxUses && promo.usedCount >= promo.maxUses) { setPromoStatus({ valid: false, error: 'Promo code usage limit reached' }); setPromoLoading(false); return; }
+      
+      const discount = promo.discountType === 'percent'
+        ? Math.round((promo.discountValue / 100) * subtotal)
+        : promo.discountValue;
+
+      setPromoStatus({ valid: true, code: promo.code, discountType: promo.discountType, discountValue: promo.discountValue, discount });
       setPromoLoading(false);
-    }, 500);
+    } catch {
+      setPromoStatus({ valid: false, error: 'Could not validate code.' });
+      setPromoLoading(false);
+    }
   };
 
   const handlePlaceOrder = async () => {
