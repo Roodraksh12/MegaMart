@@ -4,6 +4,7 @@ import { X, Trash2, ChevronRight, ShoppingBag, Tag, CheckCircle, XCircle, Loader
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
+import { supabase } from '../lib/supabase';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
@@ -18,10 +19,16 @@ export default function CartDrawer() {
   const [deliveryFee, setDeliveryFee] = useState(30);
   const [freeAbove, setFreeAbove] = useState(150);
   useEffect(() => {
-    fetch(`${API_URL}/api/settings/delivery`)
-      .then(r => r.json())
-      .then(d => { setDeliveryFee(d.deliveryFee ?? 30); setFreeAbove(d.freeAbove ?? 150); })
-      .catch(() => {});
+    const fetchSettings = async () => {
+      try {
+        const { data } = await supabase.from('admin_settings').select('key, value').in('key', ['delivery_fee', 'free_delivery_above']);
+        const settings = {};
+        (data || []).forEach(row => { settings[row.key] = row.value; });
+        if (settings.delivery_fee) setDeliveryFee(Number(settings.delivery_fee));
+        if (settings.free_delivery_above) setFreeAbove(Number(settings.free_delivery_above));
+      } catch (err) {}
+    };
+    fetchSettings();
   }, []);
 
   // Promo code state
@@ -35,24 +42,34 @@ export default function CartDrawer() {
     setPromoStatus('loading');
     setPromoError('');
     try {
-      const res = await fetch(`${API_URL}/api/promo/validate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: promoCode.trim(), orderTotal: total }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
+      const key = `promo_${promoCode.toUpperCase().trim()}`;
+      const { data } = await supabase.from('admin_settings').select('value').eq('key', key).single();
+      
+      if (!data) {
         setPromoStatus('error');
-        setPromoError(data.error || 'Invalid promo code');
+        setPromoError('Invalid promo code');
         setAppliedPromo(null);
-      } else {
-        setAppliedPromo(data);
-        setPromoStatus('success');
-        addToast({ message: `Promo applied! You save ₹${data.discount}`, type: 'success' });
+        return;
       }
+      
+      const promo = JSON.parse(data.value);
+      if (!promo.active) { setPromoStatus('error'); setPromoError('This promo code is inactive'); return; }
+      if (promo.expiresAt && new Date(promo.expiresAt) < new Date()) { setPromoStatus('error'); setPromoError('Promo code has expired'); return; }
+      if (promo.minOrder && total < promo.minOrder) { setPromoStatus('error'); setPromoError(`Minimum order ₹${promo.minOrder} required`); return; }
+      if (promo.maxUses && promo.usedCount >= promo.maxUses) { setPromoStatus('error'); setPromoError('Promo code usage limit reached'); return; }
+      
+      const discount = promo.discountType === 'percent'
+        ? Math.round((promo.discountValue / 100) * total)
+        : promo.discountValue;
+
+      const promoData = { valid: true, code: promo.code, discountType: promo.discountType, discountValue: promo.discountValue, discount };
+      setAppliedPromo(promoData);
+      setPromoStatus('success');
+      addToast({ message: `Promo applied! You save ₹${discount}`, type: 'success' });
     } catch {
       setPromoStatus('error');
       setPromoError('Could not validate code. Try again.');
+      setAppliedPromo(null);
     }
   };
 

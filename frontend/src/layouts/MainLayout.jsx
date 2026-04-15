@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
+import { supabase } from '../lib/supabase';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import CartDrawer from '../components/CartDrawer';
@@ -11,15 +12,16 @@ export default function MainLayout() {
   const [waNumber, setWaNumber] = useState('919876543210');
 
   useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/settings/store`)
-      .then(res => res.json())
-      .then(data => { 
-        if (data.phone) {
-          const digits = data.phone.replace(/\D/g, '');
+    const fetchPhone = async () => {
+      try {
+        const { data } = await supabase.from('admin_settings').select('value').eq('key', 'mart_phone').single();
+        if (data?.value) {
+          const digits = data.value.replace(/\D/g, '');
           setWaNumber(digits.startsWith('91') ? digits : '91' + digits);
         }
-      })
-      .catch(() => {});
+      } catch (err) {}
+    };
+    fetchPhone();
   }, []);
 
   return (

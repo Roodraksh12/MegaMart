@@ -90,16 +90,25 @@ export default function AdminDashboard() {
 
   async function fetchDeliverySettings() {
     try {
-      const res = await fetch(`${API_URL}/api/admin/settings`, { headers: { 'Authorization': `Bearer ${adminToken}` } });
-      if (res.ok) { const data = await res.json(); setDeliverySettings(data); }
+      const { data } = await supabase.from('admin_settings').select('key, value').in('key', ['delivery_fee', 'free_delivery_above']);
+      const settings = {};
+      (data || []).forEach(row => { settings[row.key] = row.value; });
+      setDeliverySettings({
+        deliveryFee: Number(settings.delivery_fee ?? 30),
+        freeAbove: Number(settings.free_delivery_above ?? 150),
+      });
     } catch (err) { console.error(err); }
   }
 
   async function fetchPromoCodes() {
     try {
       setPromoLoading(true);
-      const res = await fetch(`${API_URL}/api/admin/promo-codes`, { headers: { 'Authorization': `Bearer ${adminToken}` } });
-      if (res.ok) { const data = await res.json(); setPromoCodes(data); }
+      const { data, error } = await supabase.from('admin_settings').select('key, value').like('key', 'promo_%');
+      if (error) throw error;
+      const codes = (data || []).map(row => {
+        try { return JSON.parse(row.value); } catch { return null; }
+      }).filter(Boolean);
+      setPromoCodes(codes);
     } catch (err) { console.error(err); } finally { setPromoLoading(false); }
   }
 
@@ -110,11 +119,10 @@ export default function AdminDashboard() {
   // Fetch store settings data when switching to store tab
   async function fetchAccountDetails() {
     try {
-      const res = await fetch(`${API_URL}/api/admin/account`, { headers: { 'Authorization': `Bearer ${adminToken}` } });
-      if (res.ok) { 
-        const data = await res.json(); 
-        setAccountForm(f => ({ ...f, name: data.mart_name || '', email: data.mart_email || '', phone: data.mart_phone || '', username: data.admin_username || '' })); 
-      }
+      const { data } = await supabase.from('admin_settings').select('key, value').in('key', ['mart_name', 'mart_email', 'mart_phone', 'admin_username']);
+      const settings = {};
+      (data || []).forEach(row => { settings[row.key] = row.value; });
+      setAccountForm(f => ({ ...f, name: settings.mart_name || '', email: settings.mart_email || '', phone: settings.mart_phone || '', username: settings.admin_username || '' })); 
     } catch (err) { console.error(err); }
   }
 
@@ -144,11 +152,18 @@ export default function AdminDashboard() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`${API_URL}/api/auth/admin-login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
-      const data = await res.json();
-      if (data.token) { sessionStorage.setItem('adminToken', data.token); setAdminToken(data.token); }
-      else alert(data.error);
-    } catch (err) { console.error(err); alert('Network Error. Is the backend running?'); }
+      const { data: userRaw } = await supabase.from('admin_settings').select('value').eq('key', 'admin_username').single();
+      const { data: pwRaw } = await supabase.from('admin_settings').select('value').eq('key', 'admin_password').single();
+      const validUser = userRaw?.value || 'admin';
+      const validPw = pwRaw?.value || 'SuperAdmin123!';
+      
+      if (username === validUser && password === validPw) {
+        sessionStorage.setItem('adminToken', 'active-session');
+        setAdminToken('active-session');
+      } else {
+        alert('Invalid admin credentials.');
+      }
+    } catch (err) { alert('Database error resolving login.'); }
   };
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
@@ -282,21 +297,31 @@ export default function AdminDashboard() {
     if (pwForm.newPw.length < 8) { setPwMsg({ text: 'New password must be at least 8 characters.', isError: true }); return; }
     setPwLoading(true);
     try {
-      const res = await fetch(`${API_URL}/api/auth/admin-change-password`, { method: 'POST', headers: authHeaders, body: JSON.stringify({ currentPassword: pwForm.current, newPassword: pwForm.newPw }) });
-      const data = await res.json();
-      if (res.ok) { setPwMsg({ text: '✅ Password updated! You will be logged out.', isError: false }); setPwForm({ current: '', newPw: '', confirm: '' }); setTimeout(() => { sessionStorage.removeItem('adminToken'); setAdminToken(null); }, 2000); }
-      else setPwMsg({ text: data.error || 'Failed.', isError: true });
-    } catch { setPwMsg({ text: 'Network error.', isError: true }); } finally { setPwLoading(false); }
+      const { data: pwRaw } = await supabase.from('admin_settings').select('value').eq('key', 'admin_password').single();
+      const currentStored = pwRaw?.value || 'SuperAdmin123!';
+      if (pwForm.current !== currentStored) {
+        setPwMsg({ text: 'Current password is incorrect', isError: true });
+        setPwLoading(false);
+        return;
+      }
+      
+      const { error } = await supabase.from('admin_settings').upsert({ key: 'admin_password', value: pwForm.newPw });
+      if (error) throw error;
+      
+      setPwMsg({ text: '✅ Password updated! You will be logged out.', isError: false }); 
+      setPwForm({ current: '', newPw: '', confirm: '' }); 
+      setTimeout(() => { sessionStorage.removeItem('adminToken'); setAdminToken(null); }, 2000);
+    } catch { setPwMsg({ text: 'Database error.', isError: true }); } finally { setPwLoading(false); }
   };
 
   const handleSaveDelivery = async () => {
     setDeliverySaving(true);
     setDeliveryMsg('');
     try {
-      const res = await fetch(`${API_URL}/api/admin/settings`, { method: 'POST', headers: authHeaders, body: JSON.stringify(deliverySettings) });
-      const data = await res.json();
-      setDeliveryMsg(res.ok ? '✅ Delivery settings saved!' : (data.error || 'Failed to save'));
-    } catch { setDeliveryMsg('Network error'); } finally { setDeliverySaving(false); setTimeout(() => setDeliveryMsg(''), 3000); }
+      await supabase.from('admin_settings').upsert({ key: 'delivery_fee', value: String(deliverySettings.deliveryFee) });
+      await supabase.from('admin_settings').upsert({ key: 'free_delivery_above', value: String(deliverySettings.freeAbove) });
+      setDeliveryMsg('✅ Delivery settings saved!');
+    } catch { setDeliveryMsg('Database error'); } finally { setDeliverySaving(false); setTimeout(() => setDeliveryMsg(''), 3000); }
   };
 
   const handleSaveAccount = async (e) => {
@@ -304,15 +329,24 @@ export default function AdminDashboard() {
     setAccountSaving(true);
     setAccountMsg({ text: '', isError: false });
     try {
-      const res = await fetch(`${API_URL}/api/admin/account`, { method: 'POST', headers: authHeaders, body: JSON.stringify(accountForm) });
-      const data = await res.json();
-      if (res.ok) {
-        setAccountMsg({ text: '✅ Account details saved successfully!', isError: false });
-        setAccountForm(f => ({ ...f, password: '' }));
-      } else {
-        setAccountMsg({ text: data.error || 'Failed to save', isError: true });
+      const { data: pwRaw } = await supabase.from('admin_settings').select('value').eq('key', 'admin_password').single();
+      const currentStored = pwRaw?.value || 'SuperAdmin123!';
+      if (accountForm.password !== currentStored) {
+        setAccountMsg({ text: 'Incorrect admin password', isError: true });
+        return;
       }
-    } catch { setAccountMsg({ text: 'Network error', isError: true }); } 
+      
+      const upserts = [
+        { key: 'mart_name', value: accountForm.name || '' },
+        { key: 'mart_email', value: accountForm.email || '' },
+        { key: 'mart_phone', value: accountForm.phone || '' }
+      ];
+      if (accountForm.username) upserts.push({ key: 'admin_username', value: accountForm.username.trim() });
+      
+      await supabase.from('admin_settings').upsert(upserts);
+      setAccountMsg({ text: '✅ Account details saved successfully!', isError: false });
+      setAccountForm(f => ({ ...f, password: '' }));
+    } catch { setAccountMsg({ text: 'Database error', isError: true }); } 
     finally { setAccountSaving(false); setTimeout(() => setAccountMsg({ text: '', isError: false }), 4000); }
   };
 
@@ -320,23 +354,29 @@ export default function AdminDashboard() {
     e.preventDefault();
     setPromoMsg({ text: '', isError: false });
     try {
-      const res = await fetch(`${API_URL}/api/admin/promo-codes`, { method: 'POST', headers: authHeaders, body: JSON.stringify(newPromo) });
-      const data = await res.json();
-      if (res.ok) {
-        setPromoMsg({ text: `✅ Code "${data.promo.code}" created!`, isError: false });
-        setNewPromo({ code: randomCode(), discountType: 'percent', discountValue: 10, minOrder: 0, maxUses: 0, expiresAt: '' });
-        fetchPromoCodes();
-      } else {
-        setPromoMsg({ text: data.error || 'Failed to create promo', isError: true });
+      const promoData = { ...newPromo, code: newPromo.code.toUpperCase().trim(), active: true, createdAt: new Date().toISOString() };
+      const key = `promo_${promoData.code}`;
+      const { data: existing } = await supabase.from('admin_settings').select('key').eq('key', key).single();
+      if (existing) {
+        setPromoMsg({ text: 'Promo code already exists', isError: true });
+        return;
       }
-    } catch { setPromoMsg({ text: 'Network error', isError: true }); }
+      
+      const { error } = await supabase.from('admin_settings').insert({ key, value: JSON.stringify(promoData) });
+      if (error) throw error;
+      
+      setPromoMsg({ text: `✅ Code "${promoData.code}" created!`, isError: false });
+      setNewPromo({ code: randomCode(), discountType: 'percent', discountValue: 10, minOrder: 0, maxUses: 0, expiresAt: '' });
+      fetchPromoCodes();
+    } catch { setPromoMsg({ text: 'Database error', isError: true }); }
     setTimeout(() => setPromoMsg({ text: '', isError: false }), 4000);
   };
 
   const handleDeletePromo = async (code) => {
     if (!window.confirm(`Delete promo code "${code}"?`)) return;
     try {
-      await fetch(`${API_URL}/api/admin/promo-codes/${code}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${adminToken}` } });
+      const key = `promo_${code.toUpperCase()}`;
+      await supabase.from('admin_settings').delete().eq('key', key);
       fetchPromoCodes();
     } catch (err) { console.error(err); }
   };
