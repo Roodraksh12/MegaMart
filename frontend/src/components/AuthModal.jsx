@@ -15,15 +15,35 @@ import { supabase } from '../lib/supabase';
 
 async function syncSupabaseUser(firebaseUser) {
   const id = firebaseUser.uid;
+  const displayName = firebaseUser.displayName || (firebaseUser.email ? firebaseUser.email.split('@')[0] : 'User');
+
+  // First, try to find the user — never update id (would break FK on orders)
+  const { data: existing } = await supabase
+    .from('users')
+    .select('*')
+    .eq('firebase_uid', id)
+    .single();
+
+  if (existing) {
+    // User already exists – optionally refresh non-critical fields
+    await supabase.from('users').update({
+      name: displayName,
+      phone: firebaseUser.phoneNumber || existing.phone || '',
+      avatar: firebaseUser.photoURL || existing.avatar || ''
+    }).eq('firebase_uid', id);
+    return { user: { ...existing, name: displayName }, token: firebaseUser.accessToken };
+  }
+
+  // New user – insert fresh record
   const { data, error } = await supabase
     .from('users')
-    .upsert({
-      id: id,
+    .insert({
+      id,
       firebase_uid: id,
-      name: firebaseUser.displayName || (firebaseUser.email ? firebaseUser.email.split('@')[0] : 'User'),
+      name: displayName,
       phone: firebaseUser.phoneNumber || '',
       avatar: firebaseUser.photoURL || ''
-    }, { onConflict: 'firebase_uid' })
+    })
     .select()
     .single();
 
@@ -31,7 +51,7 @@ async function syncSupabaseUser(firebaseUser) {
     console.error('Supabase sync error:', error);
     return { error: error.message };
   }
-  
+
   return { user: data, token: firebaseUser.accessToken };
 }
 
