@@ -67,6 +67,53 @@ INSERT INTO products (id, name, category, price, mrp, image, unit, in_stock, sto
 ('p14', 'Pomegranate', 'veg-fruits', 150, 180, '🍎', '500 g', FALSE, 'out', TRUE, '["fresh"]', 0)
 ON CONFLICT (id) DO NOTHING;
 
--- 6. Create Storage Bucket for product images
+-- 6. Admin Settings Table (key-value store for all admin-controlled settings)
+CREATE TABLE IF NOT EXISTS admin_settings (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 7. Seed default admin settings
+INSERT INTO admin_settings (key, value) VALUES
+  ('admin_username', 'admin'),
+  ('admin_password', 'admin123'),
+  ('delivery_fee', '30'),
+  ('free_delivery_above', '150'),
+  ('mart_name', 'SuperMart'),
+  ('mart_email', 'supermart@example.com'),
+  ('mart_phone', '9876543210')
+ON CONFLICT (key) DO NOTHING;
+
+-- 8. Enable Row Level Security (RLS) on all tables
+ALTER TABLE products ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_settings ENABLE ROW LEVEL SECURITY;
+
+-- 9. RLS Policies — allow anon to read products and admin_settings
+CREATE POLICY "Anyone can read products" ON products FOR SELECT USING (true);
+CREATE POLICY "Anyone can read admin_settings" ON admin_settings FOR SELECT USING (true);
+CREATE POLICY "Anyone can upsert admin_settings" ON admin_settings FOR ALL USING (true);
+
+-- 10. RLS Policies — users can manage their own data
+CREATE POLICY "Users can view their own orders" ON orders FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own orders" ON orders FOR INSERT WITH CHECK (true);
+CREATE POLICY "Users can update their own orders" ON orders FOR UPDATE USING (true);
+
+CREATE POLICY "Users can view order items" ON order_items FOR SELECT USING (true);
+CREATE POLICY "Users can insert order items" ON order_items FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Public user read" ON users FOR SELECT USING (true);
+CREATE POLICY "Public user insert" ON users FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public user update" ON users FOR UPDATE USING (true);
+
+-- 11. Policy to allow product management (inventory)
+CREATE POLICY "Anyone can insert products" ON products FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update products" ON products FOR UPDATE USING (true);
+CREATE POLICY "Anyone can delete products" ON products FOR DELETE USING (true);
+
+-- 12. Create Storage Bucket for product images
 -- Run this separately or via Supabase dashboard Storage tab:
 -- INSERT INTO storage.buckets (id, name, public) VALUES ('product-images', 'product-images', TRUE);
