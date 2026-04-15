@@ -15,7 +15,13 @@ export const useStore = create(
         try {
           const { data, error } = await supabase.from('products').select('*');
           if (error) throw error;
-          set({ products: data || [], isProductsLoading: false });
+          const mappedProducts = (data || []).map(r => ({
+            ...r,
+            inStock: r.in_stock,
+            isFresh: r.is_fresh,
+            tags: Array.isArray(r.tags) ? r.tags : JSON.parse(r.tags || '[]')
+          }));
+          set({ products: mappedProducts, isProductsLoading: false });
         } catch (error) {
           console.error("Failed to fetch products", error);
           set({ products: [], isProductsLoading: false });
