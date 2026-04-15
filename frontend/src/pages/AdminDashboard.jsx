@@ -143,11 +143,12 @@ export default function AdminDashboard() {
   // ── Handlers ──────────────────────────────────────
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (username === 'admin' && password === 'admin123') {
-      sessionStorage.setItem('adminToken', 'mock-admin-token'); setAdminToken('mock-admin-token');
-    } else {
-      alert('Invalid admin credentials. (Hint: admin / admin123)');
-    }
+    try {
+      const res = await fetch(`${API_URL}/api/auth/admin-login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username, password }) });
+      const data = await res.json();
+      if (data.token) { sessionStorage.setItem('adminToken', data.token); setAdminToken(data.token); }
+      else alert(data.error);
+    } catch (err) { console.error(err); alert('Network Error. Is the backend running?'); }
   };
 
   const handleUpdateOrderStatus = async (orderId, newStatus) => {
