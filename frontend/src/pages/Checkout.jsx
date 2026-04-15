@@ -144,6 +144,7 @@ export default function Checkout() {
       
       addOrder(order);
       clearCart();
+      setOrderId(newOrderId);
       setIsProcessing(false);
       setStep(4);
     } catch (error) {

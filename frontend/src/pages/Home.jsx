@@ -78,8 +78,6 @@ export default function Home() {
   const bestSellers = products.filter(p => p.tags?.includes('popular')).slice(0, 5);
   const recentPantry = products.filter(p => p.isFresh).slice(0, 5);
 
-  const { QUICK_BASKETS: baskets } = { QUICK_BASKETS };
-
   const bundleChips = [
     { color: 'bg-secondary-container text-on-secondary-container', text: 'Morning Fresh' },
     { color: 'bg-tertiary-container text-on-tertiary-container',  text: 'Pantry Refill' },

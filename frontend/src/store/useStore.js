@@ -11,7 +11,7 @@ export const useStore = create(
       products: [],
       isProductsLoading: false,
       fetchProducts: async () => {
-        if (get().products.length === 0) set({ isProductsLoading: true });
+        set({ isProductsLoading: get().products.length === 0 });
         try {
           const { data, error } = await supabase.from('products').select('*');
           if (error) throw error;
@@ -19,7 +19,7 @@ export const useStore = create(
             ...r,
             inStock: r.in_stock,
             isFresh: r.is_fresh,
-            tags: Array.isArray(r.tags) ? r.tags : JSON.parse(r.tags || '[]')
+            tags: Array.isArray(r.tags) ? r.tags : (() => { try { return JSON.parse(r.tags || '[]'); } catch { return []; } })()
           }));
           set({ products: mappedProducts, isProductsLoading: false });
         } catch (error) {

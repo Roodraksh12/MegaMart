@@ -6,8 +6,6 @@ import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
 import { supabase } from '../lib/supabase';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
 export default function CartDrawer() {
   const { isCartOpen, toggleCart, cart, getCartTotal, getCartSavings, updateQuantity, removeFromCart, addToast } = useStore();
   const navigate = useNavigate();

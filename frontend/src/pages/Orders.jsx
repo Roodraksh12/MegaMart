@@ -5,7 +5,6 @@ import { useStore } from '../store/useStore';
 import ProductCard from '../components/ProductCard';
 import { cn } from '../utils/cn';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 // ─── Print Invoice Styles (injected dynamically) ─────────────────────────────
 const PRINT_STYLES = `
