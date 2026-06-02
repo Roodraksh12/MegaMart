@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { CheckCircle, Truck, Banknote, ChevronRight, PackageCheck, Tag, X, CreditCard } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
@@ -10,6 +10,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 export default function Checkout() {
   const { cart, getCartTotal, clearCart, user, toggleAuth, addOrder } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
   
   const [step, setStep] = useState(1);
   const [orderId, setOrderId] = useState('');
@@ -44,8 +45,8 @@ export default function Checkout() {
   }, []);
 
   // Promo code state
-  const [promoInput, setPromoInput] = useState('');
-  const [promoStatus, setPromoStatus] = useState(null); // null | { valid, code, discount, error }
+  const [promoInput, setPromoInput] = useState(location.state?.appliedPromo?.code || '');
+  const [promoStatus, setPromoStatus] = useState(location.state?.appliedPromo || null); // null | { valid, code, discount, error }
   const [promoLoading, setPromoLoading] = useState(false);
 
   const subtotal = getCartTotal();
@@ -244,7 +245,13 @@ export default function Checkout() {
                {cart.map(item => (
                  <div key={item.id} className="flex justify-between items-center bg-white p-3 rounded-lg shadow-sm">
                    <div className="flex items-center gap-3">
-                     <span className="text-2xl">{item.image}</span>
+                     <div className="w-12 h-12 flex items-center justify-center bg-gray-50 rounded-lg shrink-0">
+                       {item.image?.startsWith('http') ? (
+                         <img src={item.image} className="w-full h-full object-cover rounded-lg" alt="" />
+                       ) : (
+                         <span className="text-2xl">{item.image}</span>
+                       )}
+                     </div>
                      <div>
                        <p className="font-medium text-sm">{item.name}</p>
                        <p className="text-xs text-text-muted">{item.quantity} x ₹{item.price}</p>
@@ -408,7 +415,14 @@ export default function Checkout() {
                 <tbody>
                   {(useStore.getState().orders[0]?.items || []).map((item, i) => (
                     <tr key={i} className="border-b border-gray-50">
-                      <td className="py-2 font-medium">{item.image} {item.name}</td>
+                      <td className="py-2 font-medium flex items-center gap-2">
+                        {item.image?.startsWith('http') ? (
+                          <img src={item.image} className="w-6 h-6 rounded object-cover shrink-0" alt="" />
+                        ) : (
+                          <span className="shrink-0">{item.image}</span>
+                        )}
+                        <span className="line-clamp-2 text-xs">{item.name}</span>
+                      </td>
                       <td className="py-2 text-center text-gray-500">×{item.quantity}</td>
                       <td className="py-2 text-right text-gray-500">₹{item.price}</td>
                       <td className="py-2 text-right font-semibold">₹{(item.price * item.quantity).toFixed(2)}</td>

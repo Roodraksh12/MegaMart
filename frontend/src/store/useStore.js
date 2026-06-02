@@ -28,6 +28,17 @@ export const useStore = create(
         }
       },
 
+      // Cart Syncing
+      syncCart: async () => {
+        const { cart, user } = get();
+        if (!user) return;
+        try {
+          await supabase.from('user_carts').upsert({ user_id: user.id, items: cart });
+        } catch (e) {
+          console.error("Cart sync failed", e);
+        }
+      },
+
       // Cart State
       cart: [],
       addToCart: (productId, quantity = 1) => {
@@ -46,6 +57,7 @@ export const useStore = create(
           get().addToast({ message: `${product.name} added to cart`, type: 'success' });
           return { cart: [...state.cart, { ...product, quantity }] };
         });
+        get().syncCart();
       },
       updateQuantity: (productId, quantity) => {
         set((state) => {
@@ -58,11 +70,16 @@ export const useStore = create(
             )
           };
         });
+        get().syncCart();
       },
       removeFromCart: (productId) => {
         set((state) => ({ cart: state.cart.filter(item => item.id !== productId) }));
+        get().syncCart();
       },
-      clearCart: () => set({ cart: [] }),
+      clearCart: () => {
+        set({ cart: [] });
+        get().syncCart();
+      },
       
       // Calculate derived cart values
       getCartTotal: () => {
@@ -115,9 +132,18 @@ export const useStore = create(
 
       // User State
       user: null,
-      login: (userData) => {
+      login: async (userData) => {
         set({ user: userData });
         get().fetchUserOrders(userData.id);
+        
+        try {
+          const { data } = await supabase.from('user_carts').select('items').eq('user_id', userData.id).single();
+          if (data && data.items && Array.isArray(data.items)) {
+            set({ cart: data.items });
+          }
+        } catch (e) {
+          console.error("Failed to fetch remote cart", e);
+        }
       },
       logout: () => {
         set({ user: null, orders: [], cart: [], wishlist: [] });
