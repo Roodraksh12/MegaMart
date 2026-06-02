@@ -19,11 +19,10 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40
-                    glass-panel border-x-0 border-b-0
-                    shadow-[0px_-8px_32px_rgba(47,51,49,0.08)]
-                    rounded-t-3xl
-                    pt-2 pb-[max(env(safe-area-inset-bottom),8px)]">
+    <nav className="md:hidden fixed bottom-6 left-4 right-4 z-40
+                    bg-white/20 border border-white/60 shadow-inner shadow-[0_8px_32px_rgba(0,0,0,0.1)]
+                    rounded-full
+                    py-1">
       <div className="flex items-center justify-around px-2 h-[60px]">
 
         {links.map(({ to, icon: Icon, label }) => {
