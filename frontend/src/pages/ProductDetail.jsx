@@ -60,9 +60,9 @@ export default function ProductDetail() {
   const savings = product.mrp > product.price ? product.mrp - product.price : 0;
 
   return (
-    <div className="bg-surface min-h-screen pb-32">
+    <div className="min-h-screen pb-32 pt-2">
       {/* Full Bleed Image Header */}
-      <div className="relative bg-surface-container-low h-[50vh] sm:h-[60vh] md:h-[500px] w-full flex items-center justify-center overflow-hidden rounded-b-3xl sm:rounded-none">
+      <div className="relative h-[50vh] sm:h-[60vh] md:h-[500px] w-full flex items-center justify-center overflow-hidden">
         
         {/* Top Actions overlay */}
         <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-center z-20">
@@ -183,9 +183,9 @@ export default function ProductDetail() {
           </div>
         </div>
 
-        {/* Sticky-ish Add to Cart Bottom Bar on Mobile, static on Desktop */}
-        <div className="fixed sm:static bottom-0 left-0 right-0 p-4 sm:p-0 bg-surface/90 sm:bg-transparent backdrop-blur-xl sm:backdrop-blur-none border-t border-surface-container sm:border-none z-30 pb-[max(env(safe-area-inset-bottom),16px)] sm:pb-0">
-          <div className="max-w-4xl mx-auto flex gap-4">
+        {/* Floating Add to Cart Bottom Bar on Mobile, static on Desktop */}
+        <div className="fixed sm:static bottom-6 sm:bottom-0 left-4 right-4 sm:left-0 sm:right-0 z-30 pointer-events-none">
+          <div className="max-w-4xl mx-auto flex gap-4 pointer-events-auto">
             {quantity === 0 ? (
               <button
                 onClick={() => addToCart(product.id, 1)}
