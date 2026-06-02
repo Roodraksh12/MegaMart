@@ -288,6 +288,18 @@ export default function AdminDashboard() {
     setShowAddProduct(true);
   };
 
+  const handleDeleteProductClick = async (productId) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    try {
+      const { error } = await supabase.from('products').delete().eq('id', productId);
+      if (error) throw error;
+      fetchProducts();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to delete product: ' + err.message);
+    }
+  };
+
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setPwMsg({ text: '', isError: false });
@@ -508,7 +520,16 @@ export default function AdminDashboard() {
                             <tbody>
                               {order.items.map((item, i) => (
                                 <tr key={i} className="border-b border-gray-50 last:border-0">
-                                  <td className="px-3 py-2 font-medium">{item.image} {item.name}</td>
+                                  <td className="px-3 py-2 font-medium">
+                                    <div className="flex items-center gap-2">
+                                      {item.image?.startsWith('http') ? (
+                                        <img src={item.image} className="w-8 h-8 rounded object-cover border border-gray-200 shrink-0" alt="" />
+                                      ) : (
+                                        <span className="shrink-0">{item.image}</span>
+                                      )}
+                                      <span className="line-clamp-2 text-xs">{item.name}</span>
+                                    </div>
+                                  </td>
                                   <td className="px-3 py-2 text-center text-gray-500">×{item.quantity}</td>
                                   <td className="px-3 py-2 text-right font-semibold">₹{(item.price * item.quantity).toFixed(2)}</td>
                                 </tr>
@@ -698,6 +719,9 @@ export default function AdminDashboard() {
                     </button>
                     <button onClick={() => handleEditProductClick(product)} className="text-xs font-bold px-3 py-1.5 rounded-full bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors">
                       ✏️ Edit
+                    </button>
+                    <button onClick={() => handleDeleteProductClick(product.id)} className="text-xs font-bold px-3 py-1.5 rounded-full bg-red-50 text-red-600 hover:bg-red-100 transition-colors flex items-center gap-1">
+                      <Trash2 size={12} /> Delete
                     </button>
                   </div>
                 </div>
