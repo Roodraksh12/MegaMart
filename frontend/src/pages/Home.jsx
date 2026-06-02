@@ -137,8 +137,8 @@ export default function Home() {
     <div className="liquid-bg min-h-screen pb-20 pt-2 transition-colors duration-1000 relative">
 
       {/* ── Hero / Deals Banner ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 relative z-10">
-        <div className={cn("glass-panel relative overflow-hidden rounded-3xl h-[380px] md:h-[420px] flex items-end pb-8 md:pb-0 md:items-center px-6 md:px-14 group transition-colors duration-1000", theme.bg)}>
+      <section className="max-w-7xl mx-auto sm:px-6 lg:px-8 pt-0 sm:pt-6 relative z-10">
+        <div className={cn("glass-panel relative overflow-hidden sm:rounded-3xl border-x-0 sm:border-x h-[380px] md:h-[420px] flex items-end pb-8 md:pb-0 md:items-center px-6 md:px-14 group transition-colors duration-1000", theme.bg)}>
           {/* Gradient overlay */}
           <div className={cn("absolute inset-0 bg-gradient-to-r z-10 transition-colors duration-1000", theme.gradient)} />
           {/* Decorative circles */}
@@ -239,17 +239,17 @@ export default function Home() {
 
       {/* ── Daily Essentials Bento (shown only on "All" tab) ── */}
       {activeCategory === 'all' && (
-        <section className="relative z-10 mx-4 sm:mx-8 px-0 py-10 mt-6 glass-panel rounded-3xl mb-8">
+        <section className="relative z-10 sm:mx-8 px-0 py-10 mt-6 glass-panel sm:rounded-3xl border-x-0 sm:border-x mb-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-8">
               <h2 className="text-2xl md:text-3xl font-headline font-bold text-on-surface mb-1">
                 Daily Essentials
               </h2>
-              <p className="text-on-surface-variant font-body text-sm">
+              <p className="text-on-surface-variant font-body text-sm px-4 sm:px-0">
                 Everything your kitchen needs for the day ahead.
               </p>
             </div>
-            <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-4 md:grid md:grid-cols-3 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="flex overflow-x-auto hide-scrollbar gap-6 pb-4 md:grid md:grid-cols-3 snap-x snap-mandatory px-4 sm:px-0">
               {QUICK_BASKETS.map((bundle, i) => (
                 <div key={bundle.id} className="w-[280px] md:w-auto flex-shrink-0 snap-center">
                   <BentoCard
@@ -266,12 +266,12 @@ export default function Home() {
 
       {/* ── Recently in Your Pantry (fresh picks, "All" tab only) ── */}
       {activeCategory === 'all' && recentPantry.length > 0 && (
-        <section className="glass-panel mx-4 sm:mx-8 py-10 mt-8 rounded-3xl mb-8">
+        <section className="glass-panel sm:mx-8 py-10 mt-8 border-x-0 sm:border-x sm:rounded-3xl mb-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl md:text-3xl font-headline font-bold text-on-surface mb-6">
+            <h2 className="text-2xl md:text-3xl font-headline font-bold text-on-surface mb-6 px-4 sm:px-0">
               Recently in Your Pantry
             </h2>
-            <div className="flex md:grid md:grid-cols-4 lg:grid-cols-5 gap-5 overflow-x-auto hide-scrollbar pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className="flex md:grid md:grid-cols-4 lg:grid-cols-5 gap-5 overflow-x-auto hide-scrollbar pb-4 snap-x snap-mandatory px-4 sm:px-0">
               {isProductsLoading
                 ? [...Array(5)].map((_, i) => <div key={i} className="w-[160px] md:w-auto flex-shrink-0"><SkeletonCard /></div>)
                 : recentPantry.map((product, i) => (

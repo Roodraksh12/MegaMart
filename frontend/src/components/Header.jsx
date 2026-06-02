@@ -111,8 +111,8 @@ export default function Header() {
 
 
   return (
-    <header className="sticky top-4 z-40 transition-all max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
-      <div className="glass-pill flex items-center h-[72px] gap-6 px-4 md:px-6">
+    <header className="sticky top-0 sm:top-4 z-40 transition-all max-w-7xl mx-auto sm:px-6 lg:px-8 mb-4 sm:mb-6">
+      <div className="glass-panel sm:glass-pill border-t-0 border-x-0 sm:border-t sm:border-x flex items-center h-[72px] gap-6 px-4 md:px-6">
 
         {/* Mobile Menu & Logo */}
           <div className="flex items-center gap-3 flex-shrink-0">

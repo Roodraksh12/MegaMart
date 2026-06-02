@@ -33,10 +33,26 @@ export const useStore = create(
         const { cart, user } = get();
         if (!user) return;
         try {
-          await supabase.from('user_carts').upsert({ user_id: user.id, items: cart });
+          const { error } = await supabase.from('user_carts').upsert({ user_id: user.id, items: cart });
+          if (error) throw error;
         } catch (e) {
-          console.error("Cart sync failed", e);
+          // Fallback if SQL table wasn't created
+          await supabase.from('admin_settings').upsert({ key: `cart_${user.id}`, value: JSON.stringify(cart) }).catch(() => {});
         }
+      },
+
+      fetchRemoteCart: async (userId) => {
+        try {
+          const { data, error } = await supabase.from('user_carts').select('items').eq('user_id', userId).single();
+          if (data && data.items && Array.isArray(data.items)) return data.items;
+          if (error) throw error;
+        } catch (e) {
+          try {
+            const { data } = await supabase.from('admin_settings').select('value').eq('key', `cart_${userId}`).single();
+            if (data && data.value) return JSON.parse(data.value);
+          } catch (err) {}
+        }
+        return null;
       },
 
       // Cart State
@@ -136,14 +152,8 @@ export const useStore = create(
         set({ user: userData });
         get().fetchUserOrders(userData.id);
         
-        try {
-          const { data } = await supabase.from('user_carts').select('items').eq('user_id', userData.id).single();
-          if (data && data.items && Array.isArray(data.items)) {
-            set({ cart: data.items });
-          }
-        } catch (e) {
-          console.error("Failed to fetch remote cart", e);
-        }
+        const remoteCart = await get().fetchRemoteCart(userData.id);
+        if (remoteCart) set({ cart: remoteCart });
       },
       logout: () => {
         set({ user: null, orders: [], cart: [], wishlist: [] });
@@ -224,6 +234,17 @@ export const useStore = create(
       startLiveSync: () => {
         if (get().liveSyncActive) return;
         set({ liveSyncActive: true });
+        
+        // Initial boot sync for cart
+        const bootUser = get().user;
+        if (bootUser) {
+          get().fetchRemoteCart(bootUser.id).then(remoteCart => {
+            if (remoteCart && JSON.stringify(remoteCart) !== JSON.stringify(get().cart)) {
+              set({ cart: remoteCart });
+            }
+          });
+        }
+
         // Poll every 5 seconds for absolute highest fidelity offline-first state tracking
         setInterval(() => {
           get().fetchProducts();
