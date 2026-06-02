@@ -12,13 +12,11 @@ export default function ProductCard({ product }) {
   const isWishlisted = wishlist.includes(product.id);
 
   return (
-    <div className="flex flex-col h-full group relative">
+    <div className="flex flex-col h-full group relative glass-panel p-3 rounded-2xl transition-all duration-300 hover:-translate-y-1 hover:shadow-ambient-lg hover:border-white/80 bg-white/40">
       {/* Image container */}
       <Link
         to={`/product/${product.id}`}
-        className="block relative bg-surface-container-low rounded-xl overflow-hidden
-                   transition-all duration-300
-                   group-hover:bg-surface-container-lowest group-hover:shadow-ambient"
+        className="block relative bg-white/50 rounded-xl overflow-hidden transition-all duration-300 group-hover:bg-white/70"
       >
         <div
           className="relative flex items-center justify-center p-6"
@@ -67,8 +65,8 @@ export default function ProductCard({ product }) {
       </Link>
 
       {/* Info */}
-      <div className="pt-3 flex flex-col flex-grow">
-        <Link to={`/product/${product.id}`} className="block mb-3">
+      <div className="flex flex-col flex-grow">
+        <Link to={`/product/${product.id}`} className="block mb-2">
           <p className="text-[9px] font-bold text-on-surface-variant uppercase tracking-[0.15em] mb-1">
             {product.category || 'Essential'} · {product.unit}
           </p>
@@ -99,7 +97,7 @@ export default function ProductCard({ product }) {
               <Plus size={16} strokeWidth={2.5} />
             </button>
           ) : (
-            <div className="flex items-center gap-2 bg-surface-container rounded-lg px-2 py-1">
+            <div className="flex items-center gap-2 bg-white/60 border border-white/50 shadow-inner rounded-lg px-2 py-1">
               <button
                 className="text-on-surface hover:text-primary transition-colors"
                 onClick={() => updateQuantity(product.id, quantity - 1)}

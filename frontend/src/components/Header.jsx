@@ -111,11 +111,10 @@ export default function Header() {
 
 
   return (
-    <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur-2xl transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center h-[72px] gap-6">
+    <header className="sticky top-4 z-40 transition-all max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+      <div className="glass-pill flex items-center h-[72px] gap-6 px-4 md:px-6">
 
-          {/* Mobile Menu & Logo */}
+        {/* Mobile Menu & Logo */}
           <div className="flex items-center gap-3 flex-shrink-0">
             {!isAdminPage && (
               <button className="md:hidden p-2 -ml-2 text-primary hover:bg-surface-container-low rounded-full transition-colors" aria-label="Open menu">
@@ -130,9 +129,9 @@ export default function Header() {
           </div>
 
           {/* Search — desktop only */}
-          {!isAdminPage && (
-            <div className="hidden md:flex flex-1 items-center bg-surface-container-low rounded-full px-4 py-2.5 group focus-within:ring-1 focus-within:ring-primary transition-all relative">
-              <Search size={15} className="text-outline mr-2.5 flex-shrink-0" />
+        {!isAdminPage && (
+          <div className="hidden md:flex flex-1 items-center bg-white/40 border border-white/50 shadow-inner rounded-full px-4 py-2.5 group focus-within:ring-2 focus-within:ring-primary/50 transition-all relative">
+            <Search size={15} className="text-on-surface-variant mr-2.5 flex-shrink-0" />
               <input
                 type="text"
                 placeholder="Search for fresh produce, dairy, pantry staples..."
@@ -243,13 +242,12 @@ export default function Header() {
             </div>
           )}
         </div>
-      </div>
 
       {/* Mobile search row */}
       {!isAdminPage && mobileSearchVisible && (
-        <div className="md:hidden border-t border-surface-container px-4 py-3 bg-surface/90 backdrop-blur-xl relative">
-          <div className="flex items-center bg-surface-container-low rounded-full px-4 py-2 focus-within:ring-1 focus-within:ring-primary transition-all">
-            <Search size={15} className="text-outline mr-2.5 flex-shrink-0" />
+        <div className="md:hidden absolute top-full left-4 right-4 mt-2 p-3 glass-panel rounded-2xl animate-fade-in z-50">
+          <div className="flex items-center bg-white/50 border border-white/50 shadow-inner rounded-full px-4 py-2 focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+            <Search size={15} className="text-on-surface-variant mr-2.5 flex-shrink-0" />
             <input
               autoFocus
               type="text"

@@ -43,9 +43,9 @@ function SkeletonCard() {
 function BentoCard({ bundle, chipColor, chipText }) {
   const { addToCart } = useStore();
   return (
-    <div className="bg-surface-container-lowest p-6 rounded-2xl flex flex-col gap-4 shadow-ambient hover:shadow-ambient-lg transition-shadow duration-300">
+    <div className="glass-panel p-6 rounded-3xl flex flex-col gap-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-ambient-lg hover:border-white/80">
       <div className="flex justify-between items-start">
-        <span className={cn('chip', chipColor)}>{chipText}</span>
+        <span className={cn('chip bg-white/50 backdrop-blur border border-white/40 text-on-surface', chipColor)}>{chipText}</span>
         <span className="font-headline font-bold text-primary">₹{bundle.price}</span>
       </div>
       <h4 className="text-lg font-headline font-bold text-on-surface">{bundle.name}</h4>
@@ -134,11 +134,11 @@ export default function Home() {
   const theme = moodTheme[mood];
 
   return (
-    <div className="bg-surface pb-20">
+    <div className="liquid-bg min-h-screen pb-20 pt-2 transition-colors duration-1000 relative">
 
       {/* ── Hero / Deals Banner ── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <div className={cn("relative overflow-hidden rounded-2xl h-[380px] md:h-[420px] flex items-end pb-8 md:pb-0 md:items-center px-6 md:px-14 group transition-colors duration-1000", theme.bg)}>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 relative z-10">
+        <div className={cn("glass-panel relative overflow-hidden rounded-3xl h-[380px] md:h-[420px] flex items-end pb-8 md:pb-0 md:items-center px-6 md:px-14 group transition-colors duration-1000", theme.bg)}>
           {/* Gradient overlay */}
           <div className={cn("absolute inset-0 bg-gradient-to-r z-10 transition-colors duration-1000", theme.gradient)} />
           {/* Decorative circles */}
@@ -179,10 +179,10 @@ export default function Home() {
                 className="flex flex-col items-center gap-2 group cursor-pointer flex-shrink-0"
               >
                 <div className={cn(
-                  'w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all duration-200',
+                  'w-14 h-14 rounded-full flex items-center justify-center text-2xl transition-all duration-300',
                   isActive
-                    ? 'bg-secondary-container scale-105 shadow-ambient'
-                    : 'bg-surface-container-high group-hover:scale-110 group-hover:bg-surface-container-highest'
+                    ? 'glass-pill scale-110 shadow-ambient-lg border-white/80'
+                    : 'glass hover:scale-110 shadow-sm border-white/20'
                 )}>
                   {meta.emoji}
                 </div>
@@ -239,7 +239,7 @@ export default function Home() {
 
       {/* ── Daily Essentials Bento (shown only on "All" tab) ── */}
       {activeCategory === 'all' && (
-        <section className="bg-surface-container-low -mx-0 px-0 py-10 mt-6">
+        <section className="relative z-10 mx-4 sm:mx-8 px-0 py-10 mt-6 glass-panel rounded-3xl mb-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-8">
               <h2 className="text-2xl md:text-3xl font-headline font-bold text-on-surface mb-1">
@@ -266,9 +266,9 @@ export default function Home() {
 
       {/* ── Recently in Your Pantry (fresh picks, "All" tab only) ── */}
       {activeCategory === 'all' && recentPantry.length > 0 && (
-        <section className="bg-tertiary-container py-10 mt-8 rounded-b-3xl sm:rounded-none">
+        <section className="glass-panel mx-4 sm:mx-8 py-10 mt-8 rounded-3xl mb-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-2xl md:text-3xl font-headline font-bold text-on-tertiary-container mb-6">
+            <h2 className="text-2xl md:text-3xl font-headline font-bold text-on-surface mb-6">
               Recently in Your Pantry
             </h2>
             <div className="flex md:grid md:grid-cols-4 lg:grid-cols-5 gap-5 overflow-x-auto hide-scrollbar pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0">
