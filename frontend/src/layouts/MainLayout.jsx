@@ -25,7 +25,7 @@ export default function MainLayout() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col font-sans text-text-dark selection:bg-primary selection:text-white">
+    <div className="liquid-bg min-h-screen flex flex-col font-sans text-text-dark selection:bg-primary selection:text-white">
       <Header />
       {/* Extra bottom padding on mobile so content doesn't hide behind BottomNav */}
       <main className="flex-1 pb-16 md:pb-0">

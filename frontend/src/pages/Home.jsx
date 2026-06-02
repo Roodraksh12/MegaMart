@@ -134,7 +134,7 @@ export default function Home() {
   const theme = moodTheme[mood];
 
   return (
-    <div className="liquid-bg min-h-screen pb-20 pt-2 transition-colors duration-1000 relative">
+    <div className="pb-20 pt-2 transition-colors duration-1000 relative">
 
       {/* ── Hero / Deals Banner ── */}
       <section className="max-w-7xl mx-auto sm:px-6 lg:px-8 pt-0 sm:pt-6 relative z-10">
