@@ -16,12 +16,9 @@ export default function ProductCard({ product }) {
       {/* Image container */}
       <Link
         to={`/product/${product.id}`}
-        className="block relative bg-white/50 rounded-xl overflow-hidden transition-all duration-300 group-hover:bg-white/70"
+        className="block relative bg-white/50 rounded-xl overflow-hidden transition-all duration-300 group-hover:bg-white/70 w-full aspect-square shrink-0"
       >
-        <div
-          className="relative flex items-center justify-center p-6"
-          style={{ aspectRatio: '1 / 1' }}
-        >
+        <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-6">
           {/* Sale badge */}
           {product.discount > 0 && (
             <span className="absolute top-2 left-2 bg-error text-on-error text-[9px] font-bold px-2 py-1 rounded uppercase tracking-widest z-10">

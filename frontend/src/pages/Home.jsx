@@ -134,7 +134,7 @@ export default function Home() {
   const theme = moodTheme[mood];
 
   return (
-    <div className="pb-20 pt-2 transition-colors duration-1000 relative">
+    <div className="pb-28 pt-2 transition-colors duration-1000 relative">
 
       {/* ── Hero / Deals Banner ── */}
       <section className="max-w-7xl mx-auto sm:px-6 lg:px-8 pt-0 sm:pt-6 relative z-10">
@@ -226,7 +226,7 @@ export default function Home() {
               : moodProducts.map((product, i) => (
                   <div
                     key={product.id}
-                    className="animate-fade-in"
+                    className="animate-fade-in h-full"
                     style={{ animationDelay: `${i * 40}ms` }}
                   >
                     <ProductCard product={product} />
@@ -277,7 +277,7 @@ export default function Home() {
                 : recentPantry.map((product, i) => (
                     <div
                       key={product.id}
-                      className="animate-fade-in w-[160px] sm:w-[180px] md:w-auto flex-shrink-0 snap-start"
+                      className="animate-fade-in h-full w-[160px] sm:w-[180px] md:w-auto flex-shrink-0 snap-start"
                       style={{ animationDelay: `${i * 40}ms` }}
                     >
                       <ProductCard product={product} />
@@ -324,7 +324,7 @@ export default function Home() {
             {filteredProducts.map((product, i) => (
               <div
                 key={product.id}
-                className="animate-fade-in"
+                className="animate-fade-in h-full"
                 style={{ animationDelay: `${Math.min(i * 30, 300)}ms` }}
               >
                 <ProductCard product={product} />
