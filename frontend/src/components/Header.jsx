@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Search, ShoppingBasket, User, Heart, Menu } from 'lucide-react';
+import { Search, ShoppingBasket, User, Heart, Menu, Mic } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
 export default function Header() {
-  const { getCartItemCount, toggleCart, toggleAuth, user, products } = useStore();
+  const { getCartItemCount, toggleCart, toggleAuth, user, products, addToCart, addToast } = useStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [mobileSearchVisible, setMobileSearchVisible] = useState(false);
+  const [isListening, setIsListening] = useState(false);
 
   const location = useLocation();
   const isAdminPage = location.pathname.startsWith('/admin');
@@ -36,6 +37,78 @@ export default function Header() {
     setSearchQuery('');
     setSearchResults([]);
   };
+
+  const handleVoiceCommand = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      addToast({ message: "Voice search is not supported in this browser.", type: 'error' });
+      return;
+    }
+    
+    if (isListening) return;
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      addToast({ message: "Listening... Try saying 'Add 2 milk'", type: 'info', duration: 4000 });
+    };
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript.toLowerCase();
+      console.log("Voice Transcript:", transcript);
+      
+      let addedItems = [];
+      // Keep track of matched names so we don't add duplicates for variations
+      const matchedNames = new Set();
+
+      products.forEach(product => {
+        const prodName = product.name.toLowerCase();
+        // A simple match if transcript contains product name
+        if (transcript.includes(prodName) || (prodName.length > 3 && transcript.includes(prodName.split(' ')[0]))) {
+          if (matchedNames.has(prodName)) return;
+          matchedNames.add(prodName);
+          
+          let qty = 1;
+          const words = transcript.split(' ');
+          const idx = words.findIndex(w => w.includes(prodName.split(' ')[0]));
+          
+          if (idx > 0) {
+            const prevWord = words[idx - 1];
+            if (!isNaN(parseInt(prevWord))) qty = parseInt(prevWord);
+            else if (prevWord === 'two') qty = 2;
+            else if (prevWord === 'three') qty = 3;
+            else if (prevWord === 'four') qty = 4;
+            else if (prevWord === 'five') qty = 5;
+          }
+          
+          addToCart(product.id, qty);
+          addedItems.push(`${qty}x ${product.name}`);
+        }
+      });
+
+      if (addedItems.length > 0) {
+        addToast({ message: `🎙️ Voice added: ${addedItems.join(', ')}`, type: 'success', duration: 5000 });
+      } else {
+        addToast({ message: `🎙️ Heard: "${transcript}", but couldn't match products.`, type: 'info', duration: 4000 });
+      }
+    };
+
+    recognition.onerror = (event) => {
+      console.error("Speech error:", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+
 
   return (
     <header className="sticky top-0 z-40 bg-surface/80 backdrop-blur-2xl transition-all">
@@ -69,6 +142,14 @@ export default function Header() {
                 onBlur={() => setTimeout(() => setIsSearchOpen(false), 200)}
                 onFocus={() => { if (searchQuery.length > 1) setIsSearchOpen(true); }}
               />
+              <button
+                type="button"
+                onClick={handleVoiceCommand}
+                className={`ml-2 p-1.5 rounded-full transition-all ${isListening ? 'bg-red-100 text-red-500 animate-pulse' : 'text-primary hover:bg-primary/10'}`}
+                title="Voice Search"
+              >
+                <Mic size={18} strokeWidth={isListening ? 2.5 : 1.8} />
+              </button>
               {isSearchOpen && searchResults.length > 0 && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-surface-container-lowest rounded-xl shadow-ambient-lg overflow-hidden z-50">
                   {searchResults.map(product => (
@@ -105,6 +186,14 @@ export default function Header() {
                 aria-label="Toggle search"
               >
                 <Search size={20} />
+              </button>
+              
+              <button
+                className={`md:hidden p-2 transition-transform ${isListening ? 'text-red-500 animate-pulse scale-110' : 'text-primary hover:scale-95'}`}
+                onClick={handleVoiceCommand}
+                aria-label="Voice Search"
+              >
+                <Mic size={20} strokeWidth={isListening ? 2.5 : 1.8} />
               </button>
 
               <Link to="/wishlist" className="hidden sm:flex p-2 text-primary hover:scale-95 transition-transform">

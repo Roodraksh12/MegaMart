@@ -67,15 +67,31 @@ function BentoCard({ bundle, chipColor, chipText }) {
 ═══════════════════════════════════════════ */
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState('all');
+  const [mood, setMood] = useState('day');
   const { addToCart, toggleCart, products, fetchProducts, isProductsLoading } = useStore();
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour >= 22 || hour < 5) setMood('night');
+    else if (hour >= 5 && hour < 11) setMood('morning');
+    else setMood('day');
+  }, []);
 
   const filteredProducts = activeCategory === 'all'
     ? products
     : products.filter(p => p.category === activeCategory);
 
-  const bestSellers = products.filter(p => p.tags?.includes('popular')).slice(0, 5);
+  let moodProducts = [];
+  if (mood === 'night') moodProducts = products.filter(p => p.category === 'snacks' || p.category === 'frozen' || p.category === 'beverages');
+  else if (mood === 'morning') moodProducts = products.filter(p => p.category === 'dairy' || p.category === 'bakery');
+  
+  if (moodProducts.length < 5) {
+    moodProducts = [...moodProducts, ...products.filter(p => p.tags?.includes('popular'))];
+  }
+  moodProducts = Array.from(new Set(moodProducts)).slice(0, 5);
+
   const recentPantry = products.filter(p => p.isFresh).slice(0, 5);
 
   const bundleChips = [
@@ -84,27 +100,60 @@ export default function Home() {
     { color: 'bg-primary-container text-on-primary-container',    text: 'Health First'  },
   ];
 
+  // Dynamic Theme Config
+  const moodTheme = {
+    night: {
+      bg: 'bg-slate-900',
+      gradient: 'from-slate-900 via-indigo-900/95 to-transparent',
+      title: "Midnight\nCravings?",
+      subtitle: "Satisfy your late-night hunger with instant delivery.",
+      chip: "Night Owl Express",
+      sectionTitle: "Midnight Cravings",
+      sectionSub: "Snacks, ice cream, and instant food."
+    },
+    morning: {
+      bg: 'bg-orange-500',
+      gradient: 'from-orange-500 via-yellow-500/90 to-transparent',
+      title: "Rise and\nShine.",
+      subtitle: "Fresh dairy, bakery & morning essentials.",
+      chip: "Morning Fresh",
+      sectionTitle: "Morning Fresh",
+      sectionSub: "Dairy, bread, and breakfast essentials."
+    },
+    day: {
+      bg: 'bg-primary',
+      gradient: 'from-primary via-primary/90 to-transparent',
+      title: "The Season's\nFreshest Harvest.",
+      subtitle: "Flat 20% off on your first order of organic dairy & pantry essentials.",
+      chip: "Limited Time Offer",
+      sectionTitle: "Best Sellers",
+      sectionSub: "Most loved by our community this week."
+    }
+  };
+
+  const theme = moodTheme[mood];
+
   return (
     <div className="bg-surface pb-20">
 
       {/* ── Hero / Deals Banner ── */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        <div className="relative overflow-hidden rounded-2xl bg-primary h-[380px] md:h-[420px] flex items-end pb-8 md:pb-0 md:items-center px-6 md:px-14 group">
+        <div className={cn("relative overflow-hidden rounded-2xl h-[380px] md:h-[420px] flex items-end pb-8 md:pb-0 md:items-center px-6 md:px-14 group transition-colors duration-1000", theme.bg)}>
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary/90 to-transparent z-10" />
+          <div className={cn("absolute inset-0 bg-gradient-to-r z-10 transition-colors duration-1000", theme.gradient)} />
           {/* Decorative circles */}
-          <div className="absolute -right-16 -top-16 w-72 h-72 rounded-full bg-primary-dim opacity-60" />
-          <div className="absolute -right-4 bottom-0 w-48 h-48 rounded-full bg-surface/10" />
+          <div className="absolute -right-16 -top-16 w-72 h-72 rounded-full bg-white opacity-10" />
+          <div className="absolute -right-4 bottom-0 w-48 h-48 rounded-full bg-black opacity-10" />
 
           <div className="relative z-20 max-w-lg">
-            <span className="inline-block chip bg-secondary-container text-on-secondary-container mb-4">
-              Limited Time Offer
+            <span className="inline-block chip bg-white/20 text-white backdrop-blur-md mb-4 border border-white/30">
+              {theme.chip}
             </span>
-            <h1 className="text-white text-4xl md:text-5xl font-headline font-bold mb-4 leading-[1.1] tracking-tight">
-              The Season's<br />Freshest Harvest.
+            <h1 className="text-white text-4xl md:text-5xl font-headline font-bold mb-4 leading-[1.1] tracking-tight whitespace-pre-line">
+              {theme.title}
             </h1>
-            <p className="text-primary-fixed text-base md:text-lg mb-8 font-body">
-              Flat 20% off on your first order of organic dairy & pantry essentials.
+            <p className="text-white/90 text-base md:text-lg mb-8 font-body">
+              {theme.subtitle}
             </p>
             <button
               onClick={toggleCart}
@@ -149,16 +198,18 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Best Sellers (shown only on "All" tab) ── */}
+      {/* ── Mood Specific / Best Sellers (shown only on "All" tab) ── */}
       {activeCategory === 'all' && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-end mb-6">
             <div>
-              <h2 className="text-2xl md:text-3xl font-headline font-bold text-on-surface mb-1">
-                Best Sellers
+              <h2 className="text-2xl md:text-3xl font-headline font-bold text-on-surface mb-1 flex items-center gap-2">
+                {mood === 'night' && '🌙 '}
+                {mood === 'morning' && '☀️ '}
+                {theme.sectionTitle}
               </h2>
               <p className="text-on-surface-variant font-body text-sm">
-                Most loved by our community this week.
+                {theme.sectionSub}
               </p>
             </div>
             <button
@@ -172,7 +223,7 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-5">
             {isProductsLoading
               ? [...Array(5)].map((_, i) => <SkeletonCard key={i} />)
-              : bestSellers.map((product, i) => (
+              : moodProducts.map((product, i) => (
                   <div
                     key={product.id}
                     className="animate-fade-in"
