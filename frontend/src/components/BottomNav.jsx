@@ -21,7 +21,7 @@ export default function BottomNav() {
 
   return (
     <nav className="md:hidden fixed bottom-6 left-4 right-4 z-40
-                    bg-white/20 border border-white/60 shadow-inner shadow-[0_8px_32px_rgba(0,0,0,0.1)]
+                    bg-white/40 backdrop-blur-2xl border border-white/60 shadow-inner shadow-[0_8px_32px_rgba(0,0,0,0.1)]
                     rounded-full
                     py-1">
       <div className="flex items-center justify-around px-2 h-[60px]">
