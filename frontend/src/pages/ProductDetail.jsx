@@ -106,8 +106,8 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* Editorial Content */}
-      <div className="max-w-4xl mx-auto px-6 pt-8">
+      {/* Editorial Content - White Bottom Sheet */}
+      <div className="relative z-20 bg-surface rounded-t-[40px] shadow-[0_-12px_40px_rgba(0,0,0,0.04)] -mt-12 max-w-4xl mx-auto px-6 pt-10 pb-8 min-h-[50vh]">
         
         {/* Meta & Title */}
         <div className="mb-8">
