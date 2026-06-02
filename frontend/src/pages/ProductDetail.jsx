@@ -152,6 +152,37 @@ export default function ProductDetail() {
           </div>
         </div>
 
+        {/* Placeholder Product Description & Features */}
+        <div className="space-y-6 mb-8 mt-6">
+          <div>
+            <h3 className="text-lg font-headline font-bold text-on-surface mb-2">Description</h3>
+            <p className="text-sm font-body text-on-surface-variant leading-relaxed">
+              Experience the finest quality {product.name.toLowerCase()}, sourced directly from organic farms to ensure maximum freshness and nutritional value. Carefully handpicked and packed under strict hygiene standards, this is a must-have essential for your daily needs.
+            </p>
+          </div>
+          
+          <div className="bg-surface-container-low rounded-3xl p-5 flex justify-between items-start gap-2">
+            <div className="flex flex-col items-center text-center flex-1">
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-3">
+                <CheckCircle size={22} />
+              </div>
+              <span className="text-[10px] font-bold text-on-surface uppercase tracking-wider">Top Quality</span>
+            </div>
+            <div className="flex flex-col items-center text-center flex-1 border-x border-surface-container-high px-2">
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <span className="text-[10px] font-bold text-on-surface uppercase tracking-wider">100% Secure</span>
+            </div>
+            <div className="flex flex-col items-center text-center flex-1">
+              <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 21h14"/><path d="M6 18H4c-1 0-2-1-2-2v-5c0-1.1.9-2 2-2h1"/><path d="M17 9h1c1 0 2 .9 2 2v5c0 1-1 2-2 2h-2"/><path d="M12 22v-9"/><path d="M12 13V7"/><path d="M9 7h6"/><path d="M12 7c-1.7 0-3-1.3-3-3s1.3-3 3-3 3 1.3 3 3-1.3 3-3 3z"/></svg>
+              </div>
+              <span className="text-[10px] font-bold text-on-surface uppercase tracking-wider">Fresh Pick</span>
+            </div>
+          </div>
+        </div>
+
         {/* Sticky-ish Add to Cart Bottom Bar on Mobile, static on Desktop */}
         <div className="fixed sm:static bottom-0 left-0 right-0 p-4 sm:p-0 bg-surface/90 sm:bg-transparent backdrop-blur-xl sm:backdrop-blur-none border-t border-surface-container sm:border-none z-30 pb-[max(env(safe-area-inset-bottom),16px)] sm:pb-0">
           <div className="max-w-4xl mx-auto flex gap-4">
@@ -160,7 +191,7 @@ export default function ProductDetail() {
                 onClick={() => addToCart(product.id, 1)}
                 disabled={!product.inStock}
                 className={cn(
-                  'w-full btn-primary h-14 text-base shadow-ambient flex items-center justify-center gap-2',
+                  'w-full btn-primary !rounded-full h-14 text-base shadow-ambient flex items-center justify-center gap-2',
                   !product.inStock && 'opacity-50 cursor-not-allowed bg-surface-container-highest text-on-surface-variant'
                 )}
               >
@@ -169,16 +200,16 @@ export default function ProductDetail() {
               </button>
             ) : (
               <div className="w-full flex gap-3 h-14">
-                <div className="flex items-center bg-surface-container flex-1 rounded-xl">
+                <div className="flex items-center bg-surface-container flex-1 rounded-full">
                   <button
-                    className="flex-1 h-full flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors rounded-l-xl"
+                    className="flex-1 h-full flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors rounded-l-full"
                     onClick={() => updateQuantity(product.id, quantity - 1)}
                   >
                     <Minus size={20} />
                   </button>
                   <span className="w-12 text-center text-lg font-bold font-headline">{quantity}</span>
                   <button
-                    className="flex-1 h-full flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors rounded-r-xl"
+                    className="flex-1 h-full flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors rounded-r-full"
                     onClick={() => updateQuantity(product.id, quantity + 1)}
                   >
                     <Plus size={20} />
@@ -186,7 +217,7 @@ export default function ProductDetail() {
                 </div>
                 <button
                   onClick={toggleCart}
-                  className="flex-1 btn-primary shadow-ambient flex items-center justify-center gap-2"
+                  className="flex-1 btn-primary !rounded-full shadow-ambient flex items-center justify-center gap-2"
                 >
                   <ShoppingCart size={20} className="mb-0.5" />
                   View Cart
