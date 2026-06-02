@@ -9,8 +9,9 @@ export default function BottomNav() {
   const location = useLocation();
   const cartCount = getCartItemCount();
   const isAdmin = location.pathname.startsWith('/admin');
+  const isProductPage = location.pathname.startsWith('/product/');
 
-  if (isAdmin) return null;
+  if (isAdmin || isProductPage) return null;
 
   const links = [
     { to: '/',         icon: Home,          label: 'Home'    },
