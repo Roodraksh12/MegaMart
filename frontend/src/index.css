@@ -53,10 +53,10 @@
     @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-glass text-white;
   }
   .glass-panel {
-    @apply bg-white/60 backdrop-blur-3xl border border-white/50 shadow-ambient-lg;
+    @apply bg-white/40 backdrop-blur-xl border border-white/50 shadow-ambient-lg;
   }
   .glass-pill {
-    @apply bg-white/50 backdrop-blur-md border border-white/40 shadow-soft rounded-full;
+    @apply bg-white/30 backdrop-blur-md border border-white/40 shadow-soft rounded-full;
   }
   .liquid-bg {
     background: linear-gradient(-45deg, #f2e0c8, #dbe5d9, #fadec0, #f3f4f1);

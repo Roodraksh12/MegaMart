@@ -20,7 +20,7 @@ export default function BottomNav() {
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40
-                    bg-surface-container-lowest/90 backdrop-blur-2xl
+                    glass-panel border-x-0 border-b-0
                     shadow-[0px_-8px_32px_rgba(47,51,49,0.08)]
                     rounded-t-3xl
                     pt-2 pb-[max(env(safe-area-inset-bottom),8px)]">
@@ -35,8 +35,8 @@ export default function BottomNav() {
               className={cn(
                 'flex flex-col items-center gap-1 px-4 py-1.5 rounded-xl transition-all duration-200',
                 active
-                  ? 'text-primary bg-surface-container shadow-ambient'
-                  : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'
+                  ? 'text-primary bg-white/50 shadow-sm border border-white/40'
+                  : 'text-on-surface-variant hover:text-on-surface hover:bg-white/30'
               )}
             >
               <Icon size={22} strokeWidth={active ? 2.2 : 1.6} />
@@ -51,7 +51,7 @@ export default function BottomNav() {
         <button
           onClick={toggleCart}
           className="flex flex-col items-center gap-1 px-4 py-1.5 rounded-xl
-                     text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low
+                     text-on-surface-variant hover:text-on-surface hover:bg-white/30
                      transition-all duration-200 relative"
         >
           <span className="relative">
