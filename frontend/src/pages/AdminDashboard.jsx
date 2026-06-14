@@ -63,6 +63,7 @@ export default function AdminDashboard() {
   const [promoMsg, setPromoMsg] = useState({ text: '', isError: false });
 
   const { products, fetchProducts } = useStore();
+  const [searchQuery, setSearchQuery] = useState('');
 
   // ── Fetch helpers ──────────────────────────────────
   const authHeaders = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${adminToken}` };
@@ -704,8 +705,20 @@ export default function AdminDashboard() {
             </div>
           )}
 
+          {/* Inventory Search */}
+          <div className="mb-6 relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">🔍</span>
+            <input
+              type="text"
+              placeholder="Search products by name..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="w-full border border-gray-200 bg-white rounded-xl px-4 py-3 pl-10 text-sm focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all shadow-sm"
+            />
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {products.map(product => (
+            {products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase())).map(product => (
               <div key={product.id} className={cn('border rounded-xl p-4 flex items-center gap-4 transition-all', product.inStock ? 'bg-white border-gray-200 shadow-sm' : 'bg-gray-50 border-gray-300 opacity-60 grayscale')}>
                 <div className="text-4xl bg-gray-100 w-16 h-16 rounded-lg flex items-center justify-center border border-gray-200 overflow-hidden">
                   {product.image?.startsWith('http') ? <img src={product.image} className="w-full h-full object-cover" alt="" /> : product.image}
