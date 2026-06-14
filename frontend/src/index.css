@@ -47,28 +47,30 @@
 
   /* ── Glassmorphism Utilities ── */
   .glass {
-    @apply bg-white/30 backdrop-blur-xl border border-white/40 shadow-glass;
+    @apply bg-white/40 backdrop-blur-md border border-white/40 shadow-glass;
+    transform: translateZ(0);
+    will-change: transform;
   }
   .glass-dark {
-    @apply bg-black/40 backdrop-blur-xl border border-white/10 shadow-glass text-white;
+    @apply bg-black/50 backdrop-blur-md border border-white/10 shadow-glass text-white;
+    transform: translateZ(0);
+    will-change: transform;
   }
   .glass-panel {
-    @apply bg-white/40 backdrop-blur-xl border border-white/50 shadow-ambient-lg;
+    @apply bg-white/50 backdrop-blur-lg border border-white/50 shadow-ambient-lg;
+    transform: translateZ(0);
+    will-change: transform;
   }
   .glass-pill {
-    @apply bg-white/30 backdrop-blur-md border border-white/40 shadow-soft rounded-full;
+    @apply bg-white/40 backdrop-blur-md border border-white/40 shadow-soft rounded-full;
+    transform: translateZ(0);
+    will-change: transform;
   }
   .liquid-bg {
-    background: linear-gradient(-45deg, #f2e0c8, #dbe5d9, #fadec0, #f3f4f1);
-    background-size: 400% 400%;
-    animation: liquid 15s ease infinite;
+    background: linear-gradient(135deg, #f2e0c8, #dbe5d9, #fadec0, #f3f4f1);
+    background-size: cover;
+    background-attachment: fixed;
   }
-}
-
-@keyframes liquid {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
 }
 
 /* ── Hide scrollbar ── */
