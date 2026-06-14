@@ -59,6 +59,14 @@ export default function BottomNav() {
 
   const progress = useMotionValue(0);
 
+  // Calculate distance from the nearest whole number (0 to 0.5)
+  // This ensures the liquid effect fades out perfectly when the pill is stationary
+  const effectOpacity = useTransform(progress, v => {
+    const dist = Math.abs(v - Math.round(v));
+    // If it's more than 5% away from an exact tab, the effect is fully visible (1)
+    return Math.min(1, dist * 20);
+  });
+
   useEffect(() => {
     const idx = tabs.findIndex(t => t.to === location.pathname);
     if (idx !== -1 && idx !== activeIndex) {
@@ -130,7 +138,9 @@ export default function BottomNav() {
             style={{ 
               left: lensLeft, 
               width: lensWidth,
-              background: 'rgba(255, 255, 255, 0.5)',
+              background: 'rgba(255, 255, 255, 0.4)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
               boxShadow: 'inset 0 0 12px rgba(255, 255, 255, 0.9), 0 4px 12px rgba(0,0,0,0.1)',
               border: '1px solid rgba(255,255,255,0.7)'
             }}
@@ -138,7 +148,11 @@ export default function BottomNav() {
             {/* Inner parallax container moves opposite to the lens to perfectly align with the outer tabs */}
             <motion.div 
               className="absolute top-0 bottom-0 flex items-center gap-[6px]"
-              style={{ left: useTransform(lensLeft, v => 6 - v), width: 284 }}
+              style={{ 
+                left: useTransform(lensLeft, v => 6 - v), 
+                width: 284,
+                opacity: effectOpacity
+              }}
             >
               {/* Applies the extreme liquid chromatic aberration filter */}
               <div className="flex items-center gap-[6px] w-full h-full" style={{ filter: 'url(#liquid-chromatic)' }}>
