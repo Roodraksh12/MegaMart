@@ -110,10 +110,11 @@ export default function CartDrawer() {
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            style={{ willChange: "transform" }}
             className="fixed top-2 bottom-2 right-2 sm:right-4 h-[calc(100vh-16px)] w-[calc(100%-16px)] sm:w-[420px] glass-panel z-50 flex flex-col shadow-ambient-lg rounded-2xl overflow-hidden"
           >
             {/* Header */}
-            <div className="p-6 border-b border-white/20 flex justify-between items-center bg-white/30 backdrop-blur-md">
+            <div className="p-6 border-b border-white/20 flex justify-between items-center bg-white/30">
               <div className="flex items-center gap-2">
                 <ShoppingBag className="text-primary" size={20} strokeWidth={1.8} />
                 <h2 className="font-headline font-bold text-lg text-on-surface tracking-tight">Your Basket</h2>
@@ -142,7 +143,7 @@ export default function CartDrawer() {
 
             {/* Delivery progress bar */}
             {cart.length > 0 && (
-              <div className="px-6 py-4 bg-white/40 border-b border-white/20 backdrop-blur-md">
+              <div className="px-6 py-4 bg-white/40 border-b border-white/20">
                 {isDeliveryFree ? (
                   <div className="flex items-center gap-2 text-primary">
                     <CheckCircle size={15} className="flex-shrink-0" />
@@ -180,7 +181,7 @@ export default function CartDrawer() {
                 </div>
               ) : (
                 cart.map((item) => (
-                  <div key={item.id} className="flex gap-4 p-4 bg-white/60 hover:bg-white/80 backdrop-blur-xl border border-white/50 rounded-xl transition-all shadow-sm">
+                  <div key={item.id} className="flex gap-4 p-4 bg-white/60 hover:bg-white/80 border border-white/50 rounded-xl transition-all shadow-sm">
                     <Link to={`/product/${item.id}`} onClick={toggleCart} className="w-18 h-20 min-w-[72px] flex items-center justify-center bg-white/50 rounded-xl flex-shrink-0">
                       {item.image?.startsWith('http')
                         ? <img src={item.image} alt={item.name} className="w-full h-full object-contain rounded-xl p-2" />
@@ -235,7 +236,7 @@ export default function CartDrawer() {
 
             {/* Footer / Checkout */}
             {cart.length > 0 && (
-              <div className="border-t border-white/30 bg-white/40 backdrop-blur-xl p-6 space-y-4">
+              <div className="border-t border-white/30 bg-white/40 p-6 space-y-4">
 
                 {/* Promo Code Input */}
                 <div>
@@ -260,7 +261,7 @@ export default function CartDrawer() {
                           value={promoCode}
                           onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); setPromoStatus(null); }}
                           onKeyDown={e => e.key === 'Enter' && applyPromo()}
-                          className="w-full pl-8 pr-3 py-2.5 text-sm bg-white/50 border border-white/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-body text-on-surface placeholder:text-outline backdrop-blur-sm"
+                          className="w-full pl-8 pr-3 py-2.5 text-sm bg-white/50 border border-white/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-body text-on-surface placeholder:text-outline"
                         />
                       </div>
                       <button
@@ -280,7 +281,7 @@ export default function CartDrawer() {
                 </div>
 
                 {/* Bill summary */}
-                <div className="space-y-2 bg-white/60 border border-white/50 backdrop-blur-md rounded-xl p-4 shadow-sm">
+                <div className="space-y-2 bg-white/60 border border-white/50 rounded-xl p-4 shadow-sm">
                   <div className="flex justify-between text-sm text-on-surface-variant font-body">
                     <span>Subtotal</span>
                     <span>₹{total.toFixed(2)}</span>
