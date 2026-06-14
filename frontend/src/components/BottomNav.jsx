@@ -38,7 +38,7 @@ export default function BottomNav() {
     progress.set(activeIndex);
   }, []);
 
-  const DRAG_STEP_PX = 76;
+  const DRAG_STEP_PX = 60;
   const startProgress = useMotionValue(0);
 
   const handlePanStart = () => startProgress.set(progress.get());
@@ -62,9 +62,9 @@ export default function BottomNav() {
 
   const lensLeft = useTransform(progress, 
     [0, 1, 2, 3], 
-    [6, 82, 158, 234]
+    [6, 66, 126, 186]
   );
-  const lensWidth = 52;
+  const lensWidth = 44;
 
   if (isAdmin || isProductPage) return null;
 
@@ -76,8 +76,8 @@ export default function BottomNav() {
         onPanStart={handlePanStart}
         onPan={handlePan} 
         onPanEnd={handlePanEnd}
-        className="relative flex items-center gap-[24px] pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-[6px] rounded-full shadow-lg touch-none"
-        style={{ width: 292, height: 64 }}
+        className="relative flex items-center gap-[16px] pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-[6px] rounded-full shadow-lg touch-none"
+        style={{ width: 236, height: 56 }}
       >
         {/* ── Native iOS Frosted Glass Lens (z-20) ── */}
         <motion.div
@@ -116,7 +116,7 @@ function TabItem({ tab, index, progress, onClick }) {
   return (
     <motion.button
       onClick={onClick}
-      className="relative flex items-center justify-center w-[52px] h-[52px] rounded-full flex-shrink-0 cursor-pointer"
+      className="relative flex items-center justify-center w-[44px] h-[44px] rounded-full flex-shrink-0 cursor-pointer"
       aria-label={tab.label}
     >
       <div className="relative flex items-center justify-center w-full h-full">
