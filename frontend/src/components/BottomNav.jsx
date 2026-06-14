@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { HomeIcon as HomeOutline, HeartIcon as HeartOutline, ClipboardDocumentListIcon as OrdersOutline, ShoppingBagIcon as CartOutline } from '@heroicons/react/24/outline';
-import { HomeIcon as HomeSolid, HeartIcon as HeartSolid, ClipboardDocumentListIcon as OrdersSolid, ShoppingBagIcon as CartSolid } from '@heroicons/react/24/solid';
+import { Home, Heart, ClipboardList, ShoppingBasket } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 
-// Native iOS Frosted Glass implementation (No SVG filters)
+// SVG Filter Component to create true optical glass refraction & distortion
+const OpticalRefractionFilter = () => (
+  <svg style={{ width: 0, height: 0, position: 'absolute' }} aria-hidden="true">
+    <defs>
+      <filter id="optical-refraction" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="1" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+        <feGaussianBlur in="displaced" stdDeviation="0.5" result="blurred" />
+      </filter>
+    </defs>
+  </svg>
+);
 
 export default function BottomNav() {
   const { getCartItemCount, toggleCart } = useStore();
@@ -17,10 +27,10 @@ export default function BottomNav() {
   const isProductPage = location.pathname.startsWith('/product/');
 
   const tabs = [
-    { id: 'home', to: '/', iconOutline: HomeOutline, iconSolid: HomeSolid, label: 'Home' },
-    { id: 'saved', to: '/wishlist', iconOutline: HeartOutline, iconSolid: HeartSolid, label: 'Saved' },
-    { id: 'orders', to: '/orders', iconOutline: OrdersOutline, iconSolid: OrdersSolid, label: 'Orders' },
-    { id: 'cart', action: toggleCart, iconOutline: CartOutline, iconSolid: CartSolid, label: 'Cart', badge: cartCount }
+    { id: 'home', to: '/', icon: Home, label: 'Home' },
+    { id: 'saved', to: '/wishlist', icon: Heart, label: 'Saved' },
+    { id: 'orders', to: '/orders', icon: ClipboardList, label: 'Orders' },
+    { id: 'cart', action: toggleCart, icon: ShoppingBasket, label: 'Cart', badge: cartCount }
   ];
 
   const [activeTab, setActiveTab] = useState(tabs[0].id);
@@ -89,6 +99,7 @@ export default function BottomNav() {
 
   return (
     <>
+      <OpticalRefractionFilter />
       <nav className="md:hidden fixed bottom-6 left-4 right-4 z-40 optical-nav-dock h-[64px] flex items-center justify-center pointer-events-none">
         
         {/* Transparent Track */}
@@ -99,7 +110,13 @@ export default function BottomNav() {
           className="relative flex items-center gap-[6px] pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-[6px] rounded-full shadow-lg touch-none"
           style={{ width: 296, height: 64 }}
         >
-          {/* ── Tab Items (z-10 inactive, z-30 active) ── */}
+          {/* ── Floating Optical Glass Lens Overlay ── */}
+          <motion.div
+            className="absolute top-[6px] bottom-[6px] optical-lens z-0 rounded-full pointer-events-none"
+            style={{ left: lensLeft, width: lensWidth }}
+          />
+
+          {/* ── Tab Items ── */}
           {tabs.map((tab, i) => (
             <TabItem 
               key={tab.id} 
@@ -114,12 +131,6 @@ export default function BottomNav() {
               }}
             />
           ))}
-
-          {/* ── Native iOS Frosted Glass Lens (z-20) ── */}
-          <motion.div
-            className="absolute top-[6px] bottom-[6px] optical-lens z-20 rounded-full pointer-events-none"
-            style={{ left: lensLeft, width: lensWidth }}
-          />
         </motion.div>
       </nav>
     </>
@@ -128,8 +139,7 @@ export default function BottomNav() {
 
 // ── Mathematically Blended Tab Component ──
 function TabItem({ tab, index, progress, onClick }) {
-  const IconOutline = tab.iconOutline;
-  const IconSolid = tab.iconSolid;
+  const Icon = tab.icon;
 
   // Real-time Width Morphing
   const widthRange = [0, 1, 2, 3].map(i => i === index ? 110 : 52);
@@ -148,40 +158,46 @@ function TabItem({ tab, index, progress, onClick }) {
     <motion.button
       onClick={onClick}
       style={{ width: tabWidth }}
-      className="relative flex items-center justify-center h-[52px] rounded-full flex-shrink-0 cursor-pointer"
+      className="relative z-10 flex items-center justify-center h-[52px] rounded-full overflow-hidden flex-shrink-0 cursor-pointer"
       aria-label={tab.label}
     >
-      <div className="relative w-full h-full flex items-center justify-center min-w-max">
+      <motion.div style={{ scale: tabScale }} className="relative z-10 flex items-center justify-center min-w-max">
         
-        {/* Inactive Icon (Outlined) */}
-        <motion.div style={{ opacity: inverseOpacity }} className="absolute inset-0 z-10 text-on-surface-variant flex items-center justify-center">
-          <IconOutline className="w-[24px] h-[24px]" strokeWidth={1.5} />
-        </motion.div>
-
-        {/* Active Icon & Text (Filled and Bold) */}
-        <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 z-30 text-primary drop-shadow-sm flex items-center justify-center">
-          <IconSolid className="w-[24px] h-[24px]" />
-          
-          {tab.badge > 0 && (
-            <span className="absolute top-[8px] right-[8px] bg-primary text-on-primary text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-elevated">
-              {tab.badge > 9 ? '9+' : tab.badge}
-            </span>
-          )}
-
-          <motion.div 
-            style={{ 
-              width: useTransform(textOpacity, [0, 1], [0, 50]),
-              paddingLeft: useTransform(textOpacity, [0, 1], [0, 8]),
-              overflow: "hidden"
-            }}
-            className="flex items-center justify-start ml-1"
-          >
-            <span className="font-label text-[11px] font-bold uppercase tracking-widest whitespace-nowrap">
-              {tab.label}
-            </span>
+        {/* Crossfading Dual-Icon System */}
+        <div className="relative w-[22px] h-[22px] flex-shrink-0">
+          <motion.div style={{ opacity: inverseOpacity }} className="absolute inset-0 text-on-surface-variant flex items-center justify-center">
+            <Icon size={22} strokeWidth={1.8} />
           </motion.div>
+          <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 text-primary drop-shadow-sm flex items-center justify-center">
+            <Icon size={22} strokeWidth={2.5} />
+          </motion.div>
+          
+          {/* Badge (fades out during active expansion to make room for label) */}
+          {tab.badge > 0 && (
+            <motion.span 
+              style={{ opacity: inverseOpacity }}
+              className="absolute -top-1.5 -right-1.5 bg-primary text-on-primary text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-elevated"
+            >
+              {tab.badge > 9 ? '9+' : tab.badge}
+            </motion.span>
+          )}
+        </div>
+
+        {/* Morphing Text Label */}
+        <motion.div 
+          style={{ 
+            opacity: textOpacity,
+            width: useTransform(textOpacity, [0, 1], [0, 50]),
+            paddingLeft: useTransform(textOpacity, [0, 1], [0, 8]),
+            overflow: "hidden"
+          }}
+          className="flex items-center justify-start"
+        >
+          <span className="font-label text-[11px] font-bold uppercase tracking-widest text-primary whitespace-nowrap">
+            {tab.label}
+          </span>
         </motion.div>
-      </div>
+      </motion.div>
     </motion.button>
   );
 }
