@@ -5,14 +5,28 @@ import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 
-// SVG Filter Component to create true optical glass refraction & distortion
 const OpticalRefractionFilter = () => (
   <svg style={{ width: 0, height: 0, position: 'absolute' }} aria-hidden="true">
     <defs>
-      <filter id="optical-refraction" x="-20%" y="-20%" width="140%" height="140%">
+      <filter id="liquid-chromatic" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+        {/* Strong fractal noise for liquid glass ripples */}
         <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="1" result="noise" />
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" result="displaced" />
-        <feGaussianBlur in="displaced" stdDeviation="0.5" result="blurred" />
+        
+        {/* Displacement map to warp the background */}
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="15" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+        
+        {/* Extract channels for Chromatic Aberration */}
+        <feColorMatrix in="displaced" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red" />
+        <feColorMatrix in="displaced" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green" />
+        <feColorMatrix in="displaced" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue" />
+
+        {/* Offset channels heavily to create cyan/red fringing */}
+        <feOffset in="red" dx="5" dy="0" result="red-offset" />
+        <feOffset in="blue" dx="-5" dy="0" result="blue-offset" />
+
+        {/* Screen blend them back together */}
+        <feBlend mode="screen" in="red-offset" in2="green" result="rg" />
+        <feBlend mode="screen" in="rg" in2="blue-offset" result="chromatic" />
       </filter>
     </defs>
   </svg>
@@ -110,12 +124,6 @@ export default function BottomNav() {
           className="relative flex items-center gap-[6px] pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-[6px] rounded-full shadow-lg touch-none"
           style={{ width: 296, height: 64 }}
         >
-          {/* ── Floating Optical Glass Lens Overlay ── */}
-          <motion.div
-            className="absolute top-[6px] bottom-[6px] optical-lens z-0 rounded-full pointer-events-none"
-            style={{ left: lensLeft, width: lensWidth }}
-          />
-
           {/* ── Tab Items ── */}
           {tabs.map((tab, i) => (
             <TabItem 
@@ -131,6 +139,12 @@ export default function BottomNav() {
               }}
             />
           ))}
+
+          {/* ── Floating Optical Glass Lens Overlay ── */}
+          <motion.div
+            className="absolute top-[6px] bottom-[6px] optical-lens z-20 rounded-full pointer-events-none"
+            style={{ left: lensLeft, width: lensWidth }}
+          />
         </motion.div>
       </nav>
     </>
