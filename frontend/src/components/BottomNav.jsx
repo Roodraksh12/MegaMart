@@ -126,35 +126,44 @@ function TabItem({ tab, index, progress, onClick }) {
       className="relative flex items-center justify-center h-[52px] rounded-full flex-shrink-0 cursor-pointer"
       aria-label={tab.label}
     >
-      <div className="relative w-full h-full flex items-center justify-center min-w-max">
+      <div className="relative flex items-center justify-center min-w-max">
         
-        {/* Inactive Icon (Outlined, z-10) */}
-        <motion.div style={{ opacity: inverseOpacity }} className="absolute inset-0 z-10 text-on-surface-variant flex items-center justify-center">
-          <IconOutline className="w-[24px] h-[24px]" strokeWidth={1.5} />
-        </motion.div>
-
-        {/* Active Icon & Text (Filled, z-30) */}
-        <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 z-30 text-primary drop-shadow-sm flex items-center justify-center">
-          <IconSolid className="w-[24px] h-[24px]" />
-          
-          {tab.badge > 0 && (
-            <span className="absolute top-[8px] right-[8px] bg-primary text-on-primary text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-elevated">
-              {tab.badge > 9 ? '9+' : tab.badge}
-            </span>
-          )}
-
-          <motion.div 
-            style={{ 
-              width: useTransform(textOpacity, [0, 1], [0, 50]),
-              paddingLeft: useTransform(textOpacity, [0, 1], [0, 8]),
-              overflow: "hidden"
-            }}
-            className="flex items-center justify-start ml-1"
-          >
-            <span className="font-label text-[11px] font-bold uppercase tracking-widest whitespace-nowrap">
-              {tab.label}
-            </span>
+        {/* Fixed 24x24 Container for Perfect Icon Overlap */}
+        <div className="relative w-[24px] h-[24px] flex-shrink-0">
+          {/* Inactive Icon (Outlined, z-10) */}
+          <motion.div style={{ opacity: inverseOpacity }} className="absolute inset-0 z-10 text-on-surface-variant flex items-center justify-center">
+            <IconOutline className="w-[24px] h-[24px]" strokeWidth={1.5} />
           </motion.div>
+
+          {/* Active Icon (Filled, z-30) */}
+          <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 z-30 text-primary drop-shadow-sm flex items-center justify-center">
+            <IconSolid className="w-[24px] h-[24px]" />
+          </motion.div>
+
+          {/* Badge (z-30, Fades out slightly when active to show text cleanly) */}
+          {tab.badge > 0 && (
+            <motion.span 
+              style={{ opacity: inverseOpacity }}
+              className="absolute -top-[6px] -right-[6px] z-30 bg-primary text-on-primary text-[9px] font-bold w-[16px] h-[16px] rounded-full flex items-center justify-center shadow-elevated"
+            >
+              {tab.badge > 9 ? '9+' : tab.badge}
+            </motion.span>
+          )}
+        </div>
+
+        {/* Morphing Text Label (z-30) */}
+        <motion.div 
+          style={{ 
+            opacity: textOpacity,
+            width: useTransform(textOpacity, [0, 1], [0, 50]),
+            paddingLeft: useTransform(textOpacity, [0, 1], [0, 8]),
+            overflow: "hidden"
+          }}
+          className="relative z-30 flex items-center justify-start"
+        >
+          <span className="font-label text-[11px] font-bold uppercase tracking-widest text-primary whitespace-nowrap drop-shadow-sm">
+            {tab.label}
+          </span>
         </motion.div>
       </div>
     </motion.button>
