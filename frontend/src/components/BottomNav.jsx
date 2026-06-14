@@ -94,7 +94,7 @@ export default function BottomNav() {
           onPanStart={handlePanStart}
           onPan={handlePan} 
           onPanEnd={handlePanEnd}
-          className="relative flex items-center gap-[6px] pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-[6px] rounded-full shadow-lg touch-none"
+          className="relative flex items-center gap-[6px] pointer-events-auto bg-black/[0.03] backdrop-blur-md border border-black/[0.05] p-[6px] rounded-full shadow-inner touch-none"
           style={{ width: 296, height: 64 }}
         >
           {/* ── Floating Optical Glass Lens Overlay ── */}
