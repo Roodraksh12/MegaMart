@@ -38,7 +38,7 @@ export default function BottomNav() {
     progress.set(activeIndex);
   }, []);
 
-  const DRAG_STEP_PX = 60;
+  const DRAG_STEP_PX = 58;
   const startProgress = useMotionValue(0);
 
   const handlePanStart = () => startProgress.set(progress.get());
@@ -61,10 +61,13 @@ export default function BottomNav() {
   };
 
   const lensLeft = useTransform(progress, 
-    [0, 1, 2, 3], 
-    [6, 66, 126, 186]
+    [0, 0.5, 1, 1.5, 2, 2.5, 3], 
+    [6,   6,  64,  64, 122, 122, 180]
   );
-  const lensWidth = 44;
+  const lensWidth = useTransform(progress, 
+    [0, 0.5,  1, 1.5,  2, 2.5,  3], 
+    [110, 168, 110, 168, 110, 168, 110]
+  );
 
   if (isAdmin || isProductPage) return null;
 
@@ -76,8 +79,8 @@ export default function BottomNav() {
         onPanStart={handlePanStart}
         onPan={handlePan} 
         onPanEnd={handlePanEnd}
-        className="relative flex items-center gap-[16px] pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-[6px] rounded-full shadow-lg touch-none"
-        style={{ width: 236, height: 56 }}
+        className="relative flex items-center gap-[6px] pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-[6px] rounded-full shadow-lg touch-none"
+        style={{ width: 296, height: 64 }}
       >
         {/* ── Native iOS Frosted Glass Lens (z-20) ── */}
         <motion.div
@@ -109,6 +112,9 @@ function TabItem({ tab, index, progress, onClick }) {
   const IconOutline = tab.iconOutline;
   const IconSolid = tab.iconSolid;
 
+  const widthRange = [0, 1, 2, 3].map(i => i === index ? 110 : 52);
+  const tabWidth = useTransform(progress, [0, 1, 2, 3], widthRange);
+
   const opacityRange = [0, 1, 2, 3].map(i => i === index ? 1 : 0);
   const textOpacity = useTransform(progress, [0, 1, 2, 3], opacityRange);
   const inverseOpacity = useTransform(textOpacity, v => 1 - v);
@@ -116,10 +122,11 @@ function TabItem({ tab, index, progress, onClick }) {
   return (
     <motion.button
       onClick={onClick}
-      className="relative flex items-center justify-center w-[44px] h-[44px] rounded-full flex-shrink-0 cursor-pointer"
+      style={{ width: tabWidth }}
+      className="relative flex items-center justify-center h-[52px] rounded-full flex-shrink-0 cursor-pointer"
       aria-label={tab.label}
     >
-      <div className="relative flex items-center justify-center w-full h-full">
+      <div className="relative flex items-center justify-center min-w-max">
         
         {/* Fixed 24x24 Container for Perfect Icon Overlap */}
         <div className="relative w-[24px] h-[24px] flex-shrink-0">
@@ -133,15 +140,31 @@ function TabItem({ tab, index, progress, onClick }) {
             <IconSolid className="w-[24px] h-[24px]" />
           </motion.div>
 
-          {/* Badge (z-30) */}
+          {/* Badge (z-30, Fades out slightly when active to show text cleanly) */}
           {tab.badge > 0 && (
-            <span 
+            <motion.span 
+              style={{ opacity: inverseOpacity }}
               className="absolute -top-[6px] -right-[6px] z-30 bg-primary text-on-primary text-[9px] font-bold w-[16px] h-[16px] rounded-full flex items-center justify-center shadow-elevated"
             >
               {tab.badge > 9 ? '9+' : tab.badge}
-            </span>
+            </motion.span>
           )}
         </div>
+
+        {/* Morphing Text Label (z-30) */}
+        <motion.div 
+          style={{ 
+            opacity: textOpacity,
+            width: useTransform(textOpacity, [0, 1], [0, 50]),
+            paddingLeft: useTransform(textOpacity, [0, 1], [0, 8]),
+            overflow: "hidden"
+          }}
+          className="relative z-30 flex items-center justify-start"
+        >
+          <span className="font-label text-[11px] font-bold uppercase tracking-widest text-primary whitespace-nowrap drop-shadow-sm">
+            {tab.label}
+          </span>
+        </motion.div>
       </div>
     </motion.button>
   );
