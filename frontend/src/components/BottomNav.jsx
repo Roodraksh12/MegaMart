@@ -154,14 +154,14 @@ function TabItem({ tab, index, progress, onClick }) {
     >
       <div className="relative w-full h-full flex items-center justify-center min-w-max">
         
-        {/* Inactive Icon (z-10, gets beautifully blurred by the glass lens passing over it) */}
+        {/* Inactive Icon (Outlined) */}
         <motion.div style={{ opacity: inverseOpacity }} className="absolute inset-0 z-10 text-on-surface-variant flex items-center justify-center">
-          <Icon size={22} strokeWidth={1.8} />
+          <Icon size={22} strokeWidth={1.8} fill="none" />
         </motion.div>
 
-        {/* Active Icon & Text (z-30, perfectly sharp sitting on top of the frosted glass lens) */}
+        {/* Active Icon & Text (Filled and Bold) */}
         <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 z-30 text-primary drop-shadow-sm flex items-center justify-center">
-          <Icon size={22} strokeWidth={2.5} />
+          <Icon size={22} strokeWidth={2.5} fill="currentColor" />
           
           {tab.badge > 0 && (
             <span className="absolute top-[8px] right-[8px] bg-primary text-on-primary text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-elevated">
