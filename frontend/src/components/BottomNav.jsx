@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Heart, ClipboardList, ShoppingBasket } from 'lucide-react';
+import { HomeIcon as HomeOutline, HeartIcon as HeartOutline, ClipboardDocumentListIcon as OrdersOutline, ShoppingBagIcon as CartOutline } from '@heroicons/react/24/outline';
+import { HomeIcon as HomeSolid, HeartIcon as HeartSolid, ClipboardDocumentListIcon as OrdersSolid, ShoppingBagIcon as CartSolid } from '@heroicons/react/24/solid';
 import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
@@ -16,10 +17,10 @@ export default function BottomNav() {
   const isProductPage = location.pathname.startsWith('/product/');
 
   const tabs = [
-    { id: 'home', to: '/', icon: Home, label: 'Home' },
-    { id: 'saved', to: '/wishlist', icon: Heart, label: 'Saved' },
-    { id: 'orders', to: '/orders', icon: ClipboardList, label: 'Orders' },
-    { id: 'cart', action: toggleCart, icon: ShoppingBasket, label: 'Cart', badge: cartCount }
+    { id: 'home', to: '/', iconOutline: HomeOutline, iconSolid: HomeSolid, label: 'Home' },
+    { id: 'saved', to: '/wishlist', iconOutline: HeartOutline, iconSolid: HeartSolid, label: 'Saved' },
+    { id: 'orders', to: '/orders', iconOutline: OrdersOutline, iconSolid: OrdersSolid, label: 'Orders' },
+    { id: 'cart', action: toggleCart, iconOutline: CartOutline, iconSolid: CartSolid, label: 'Cart', badge: cartCount }
   ];
 
   const [activeTab, setActiveTab] = useState(tabs[0].id);
@@ -109,19 +110,6 @@ export default function BottomNav() {
             className="absolute top-[6px] bottom-[6px] optical-lens z-20 rounded-full pointer-events-none"
             style={{ left: lensLeft, width: lensWidth }}
           />
-            <TabItem 
-              key={tab.id} 
-              tab={tab} 
-              index={i} 
-              progress={progress} 
-              onClick={() => {
-                setActiveTab(tab.id);
-                animate(progress, i, { type: "spring", stiffness: 450, damping: 32 });
-                if (tab.action) tab.action();
-                else navigate(tab.to);
-              }}
-            />
-          ))}
         </motion.div>
       </nav>
     </>
@@ -130,7 +118,8 @@ export default function BottomNav() {
 
 // ── Mathematically Blended Tab Component ──
 function TabItem({ tab, index, progress, onClick }) {
-  const Icon = tab.icon;
+  const IconOutline = tab.iconOutline;
+  const IconSolid = tab.iconSolid;
 
   // Real-time Width Morphing
   const widthRange = [0, 1, 2, 3].map(i => i === index ? 110 : 52);
@@ -156,12 +145,12 @@ function TabItem({ tab, index, progress, onClick }) {
         
         {/* Inactive Icon (Outlined) */}
         <motion.div style={{ opacity: inverseOpacity }} className="absolute inset-0 z-10 text-on-surface-variant flex items-center justify-center">
-          <Icon size={22} strokeWidth={1.8} fill="none" />
+          <IconOutline className="w-[24px] h-[24px]" strokeWidth={1.5} />
         </motion.div>
 
         {/* Active Icon & Text (Filled and Bold) */}
         <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 z-30 text-primary drop-shadow-sm flex items-center justify-center">
-          <Icon size={22} strokeWidth={2.5} fill="currentColor" />
+          <IconSolid className="w-[24px] h-[24px]" />
           
           {tab.badge > 0 && (
             <span className="absolute top-[8px] right-[8px] bg-primary text-on-primary text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-elevated">
