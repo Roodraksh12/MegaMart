@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { HomeIcon as HomeOutline, HeartIcon as HeartOutline, ClipboardDocumentListIcon as OrdersOutline, ShoppingBagIcon as CartOutline } from '@heroicons/react/24/outline';
-import { HomeIcon as HomeSolid, HeartIcon as HeartSolid, ClipboardDocumentListIcon as OrdersSolid, ShoppingBagIcon as CartSolid } from '@heroicons/react/24/solid';
+import { Home, Heart, ClipboardList, ShoppingBasket } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
@@ -15,10 +14,10 @@ export default function BottomNav() {
   const isProductPage = location.pathname.startsWith('/product/');
 
   const tabs = [
-    { id: 'home', to: '/', iconOutline: HomeOutline, iconSolid: HomeSolid, label: 'Home' },
-    { id: 'saved', to: '/wishlist', iconOutline: HeartOutline, iconSolid: HeartSolid, label: 'Saved' },
-    { id: 'orders', to: '/orders', iconOutline: OrdersOutline, iconSolid: OrdersSolid, label: 'Orders' },
-    { id: 'cart', action: toggleCart, iconOutline: CartOutline, iconSolid: CartSolid, label: 'Cart', badge: cartCount }
+    { id: 'home', to: '/', icon: Home, label: 'Home' },
+    { id: 'saved', to: '/wishlist', icon: Heart, label: 'Saved' },
+    { id: 'orders', to: '/orders', icon: ClipboardList, label: 'Orders' },
+    { id: 'cart', action: toggleCart, icon: ShoppingBasket, label: 'Cart', badge: cartCount }
   ];
 
   const [activeTab, setActiveTab] = useState(tabs[0].id);
@@ -109,8 +108,7 @@ export default function BottomNav() {
 }
 
 function TabItem({ tab, index, progress, onClick }) {
-  const IconOutline = tab.iconOutline;
-  const IconSolid = tab.iconSolid;
+  const Icon = tab.icon;
 
   const widthRange = [0, 1, 2, 3].map(i => i === index ? 110 : 52);
   const tabWidth = useTransform(progress, [0, 1, 2, 3], widthRange);
@@ -132,12 +130,12 @@ function TabItem({ tab, index, progress, onClick }) {
         <div className="relative w-[24px] h-[24px] flex-shrink-0">
           {/* Inactive Icon (Outlined, z-10) */}
           <motion.div style={{ opacity: inverseOpacity }} className="absolute inset-0 z-10 text-on-surface-variant flex items-center justify-center">
-            <IconOutline className="w-[24px] h-[24px]" strokeWidth={1.5} />
+            <Icon size={24} strokeWidth={1.8} />
           </motion.div>
 
           {/* Active Icon (Filled, z-30) */}
           <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 z-30 text-primary drop-shadow-sm flex items-center justify-center">
-            <IconSolid className="w-[24px] h-[24px]" />
+            <Icon size={24} strokeWidth={2.5} />
           </motion.div>
 
           {/* Badge (z-30, Fades out slightly when active to show text cleanly) */}
