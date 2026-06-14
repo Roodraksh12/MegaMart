@@ -158,14 +158,14 @@ function TabItem({ tab, index, progress, onClick }) {
     <motion.button
       onClick={onClick}
       style={{ width: tabWidth }}
-      className="relative z-10 flex items-center justify-center h-[52px] rounded-full flex-shrink-0 cursor-pointer transition-all duration-300 group hover:bg-black/10 hover:shadow-md hover:backdrop-blur-md"
+      className="relative z-10 flex items-center justify-center h-[52px] rounded-full overflow-hidden flex-shrink-0 cursor-pointer"
       aria-label={tab.label}
     >
       <motion.div style={{ scale: tabScale }} className="relative z-10 flex items-center justify-center min-w-max">
         
         {/* Crossfading Dual-Icon System */}
         <div className="relative w-[22px] h-[22px] flex-shrink-0">
-          <motion.div style={{ opacity: inverseOpacity }} className="absolute inset-0 text-on-surface-variant group-hover:text-gray-900 transition-colors duration-300 flex items-center justify-center">
+          <motion.div style={{ opacity: inverseOpacity }} className="absolute inset-0 text-on-surface-variant flex items-center justify-center">
             <Icon size={22} strokeWidth={1.8} />
           </motion.div>
           <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 text-primary drop-shadow-sm flex items-center justify-center">
