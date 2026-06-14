@@ -33,7 +33,7 @@ export default function BottomNav() {
               key={to}
               to={to}
               className={cn(
-                'flex flex-col items-center gap-1 px-4 py-1.5 rounded-xl transition-all duration-200',
+                'flex flex-col items-center gap-1 px-4 py-1.5 rounded-full transition-all duration-200',
                 active
                   ? 'text-primary bg-white/50 shadow-sm border border-white/40'
                   : 'text-on-surface-variant hover:text-on-surface hover:bg-white/30'
@@ -50,7 +50,7 @@ export default function BottomNav() {
         {/* Cart */}
         <button
           onClick={toggleCart}
-          className="flex flex-col items-center gap-1 px-4 py-1.5 rounded-xl
+          className="flex flex-col items-center gap-1 px-4 py-1.5 rounded-full
                      text-on-surface-variant hover:text-on-surface hover:bg-white/30
                      transition-all duration-200 relative"
         >
