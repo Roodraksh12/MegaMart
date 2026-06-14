@@ -3,18 +3,15 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, Heart, ClipboardList, ShoppingBasket } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 
 // SVG Filter Component to create true optical glass refraction & distortion
 const OpticalRefractionFilter = () => (
   <svg style={{ width: 0, height: 0, position: 'absolute' }} aria-hidden="true">
     <defs>
       <filter id="optical-refraction" x="-20%" y="-20%" width="140%" height="140%">
-        {/* Subtle noise for real glass imperfection */}
         <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="1" result="noise" />
-        {/* Displace the background using the noise to create physical optical refraction */}
         <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" result="displaced" />
-        {/* Soft edge blur simulating optical depth of field */}
         <feGaussianBlur in="displaced" stdDeviation="0.5" result="blurred" />
       </filter>
     </defs>
@@ -37,36 +34,66 @@ export default function BottomNav() {
   ];
 
   const [activeTab, setActiveTab] = useState(tabs[0].id);
+  const activeIndex = tabs.findIndex(t => t.id === activeTab);
 
-  // Sync active tab with current route
+  // Core continuous mathematical progress for 1:1 real-time drag tracking
+  const progress = useMotionValue(0);
+
+  // Sync route to index using a spring animation
   useEffect(() => {
-    const currentTab = tabs.find(t => t.to === location.pathname);
-    if (currentTab) setActiveTab(currentTab.id);
+    const idx = tabs.findIndex(t => t.to === location.pathname);
+    if (idx !== -1 && idx !== activeIndex) {
+      setActiveTab(tabs[idx].id);
+      animate(progress, idx, { type: "spring", stiffness: 400, damping: 32 });
+    }
   }, [location.pathname]);
 
-  // Handle Drag/Pan Gestures to switch tabs
-  const handlePanEnd = (e, info) => {
-    // Requires a minimum drag distance to trigger a switch
-    const swipeThreshold = 30;
-    
-    if (Math.abs(info.offset.x) > swipeThreshold) {
-      const currentIndex = tabs.findIndex(t => t.id === activeTab);
-      
-      if (info.offset.x > swipeThreshold && currentIndex < tabs.length - 1) {
-        // Dragged Right -> Move to Next Tab
-        const nextTab = tabs[currentIndex + 1];
-        setActiveTab(nextTab.id);
-        if (nextTab.action) nextTab.action();
-        else navigate(nextTab.to);
-      } else if (info.offset.x < -swipeThreshold && currentIndex > 0) {
-        // Dragged Left -> Move to Previous Tab
-        const prevTab = tabs[currentIndex - 1];
-        setActiveTab(prevTab.id);
-        if (prevTab.action) prevTab.action();
-        else navigate(prevTab.to);
-      }
-    }
+  // Initial mount sync
+  useEffect(() => {
+    progress.set(activeIndex);
+  }, []);
+
+  // ── Drag Gesture Physics ──
+  // Base step is 58px. We map physical delta X to the progress index.
+  const DRAG_STEP_PX = 58;
+  const startProgress = useMotionValue(0);
+
+  const handlePanStart = () => {
+    startProgress.set(progress.get());
   };
+
+  const handlePan = (e, info) => {
+    // 1:1 physical tracking mapping deltaX directly to layout morphing
+    const rawNewProgress = startProgress.get() + (info.offset.x / DRAG_STEP_PX);
+    // Hard clamp to physical bounds
+    progress.set(Math.max(0, Math.min(3, rawNewProgress)));
+  };
+
+  const handlePanEnd = (e, info) => {
+    // Add momentum to calculate where the flick will land
+    const momentumProgress = progress.get() + (info.velocity.x / 1000); 
+    const closestIndex = Math.max(0, Math.min(3, Math.round(momentumProgress)));
+    
+    // Commit the state and snap the physics engine to the closest integer
+    setActiveTab(tabs[closestIndex].id);
+    animate(progress, closestIndex, { type: "spring", stiffness: 450, damping: 32 });
+
+    // Navigate or trigger action
+    const tabObj = tabs[closestIndex];
+    if (tabObj.action) tabObj.action();
+    else navigate(tabObj.to);
+  };
+
+  // ── Mathematical Coordinates for the Optical Lens ──
+  // Defines the physical width and exact stretch coordinates of the liquid glass
+  const lensLeft = useTransform(progress, 
+    [0, 0.5, 1, 1.5, 2, 2.5, 3], 
+    [6,   6,  64,  64, 122, 122, 180]
+  );
+  const lensWidth = useTransform(progress, 
+    [0, 0.5,  1, 1.5,  2, 2.5,  3], 
+    [110, 168, 110, 168, 110, 168, 110]
+  );
 
   if (isAdmin || isProductPage) return null;
 
@@ -75,91 +102,102 @@ export default function BottomNav() {
       <OpticalRefractionFilter />
       <nav className="md:hidden fixed bottom-6 left-4 right-4 z-40 optical-nav-dock h-[64px] flex items-center justify-center pointer-events-none">
         
-        {/* Center Container with Pan Gesture */}
+        {/* Transparent Track */}
         <motion.div 
-          layout 
+          onPanStart={handlePanStart}
+          onPan={handlePan} 
           onPanEnd={handlePanEnd}
-          className="flex items-center gap-1.5 pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-1.5 rounded-full shadow-lg touch-none"
+          className="relative flex items-center gap-[6px] pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-[6px] rounded-full shadow-lg touch-none"
+          style={{ width: 296, height: 64 }}
         >
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.id;
-            const Icon = tab.icon;
+          {/* ── Floating Optical Glass Lens Overlay ── */}
+          <motion.div
+            className="absolute top-[6px] bottom-[6px] optical-lens z-0 rounded-full pointer-events-none"
+            style={{ left: lensLeft, width: lensWidth }}
+          />
 
-            return (
-              <motion.button
-                layout
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  if (tab.action) tab.action();
-                  else navigate(tab.to);
-                }}
-                className={cn(
-                  "relative z-10 flex items-center justify-center gap-2 h-[52px] rounded-full",
-                  isActive ? "px-6" : "w-[52px]"
-                )}
-                style={{ WebkitTapHighlightColor: 'transparent' }}
-              >
-                {/* ── The Floating Optical Lens ── */}
-                {isActive && (
-                  <motion.div
-                    layoutId="opticalLens"
-                    className="absolute inset-0 optical-lens z-0 rounded-full"
-                    transition={{
-                      type: "spring",
-                      stiffness: 400,
-                      damping: 32,
-                      mass: 0.8
-                    }}
-                  />
-                )}
-
-                {/* ── Content Inside Lens ── */}
-                <motion.div 
-                  layout
-                  className="relative z-10 flex items-center gap-2"
-                  animate={{ scale: isActive ? 1.05 : 1 }}
-                  transition={{ type: "spring", stiffness: 450, damping: 25 }}
-                >
-                  <span className="relative flex-shrink-0">
-                    <Icon 
-                      size={22} 
-                      strokeWidth={isActive ? 2.5 : 1.8} 
-                      className={cn(
-                        "transition-colors duration-300", 
-                        isActive ? "text-primary drop-shadow-sm" : "text-on-surface-variant"
-                      )}
-                    />
-                    {tab.badge > 0 && (
-                      <motion.span 
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute -top-1.5 -right-1.5 bg-primary text-on-primary text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-elevated"
-                      >
-                        {tab.badge > 9 ? '9+' : tab.badge}
-                      </motion.span>
-                    )}
-                  </span>
-                  
-                  <AnimatePresence initial={false}>
-                    {isActive && (
-                      <motion.span 
-                        initial={{ opacity: 0, width: 0 }}
-                        animate={{ opacity: 1, width: 'auto' }}
-                        exit={{ opacity: 0, width: 0 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                        className="font-label text-[11px] font-bold uppercase tracking-widest text-primary whitespace-nowrap overflow-hidden"
-                      >
-                        {tab.label}
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </motion.div>
-              </motion.button>
-            );
-          })}
+          {/* ── Tab Items ── */}
+          {tabs.map((tab, i) => (
+            <TabItem 
+              key={tab.id} 
+              tab={tab} 
+              index={i} 
+              progress={progress} 
+              onClick={() => {
+                setActiveTab(tab.id);
+                animate(progress, i, { type: "spring", stiffness: 450, damping: 32 });
+                if (tab.action) tab.action();
+                else navigate(tab.to);
+              }}
+            />
+          ))}
         </motion.div>
       </nav>
     </>
+  );
+}
+
+// ── Mathematically Blended Tab Component ──
+function TabItem({ tab, index, progress, onClick }) {
+  const Icon = tab.icon;
+
+  // Real-time Width Morphing
+  const widthRange = [0, 1, 2, 3].map(i => i === index ? 110 : 52);
+  const tabWidth = useTransform(progress, [0, 1, 2, 3], widthRange);
+
+  // Real-time Opacity Crossfading for perfectly smooth color transitions
+  const opacityRange = [0, 1, 2, 3].map(i => i === index ? 1 : 0);
+  const textOpacity = useTransform(progress, [0, 1, 2, 3], opacityRange);
+  const inverseOpacity = useTransform(textOpacity, v => 1 - v);
+
+  // Real-time Scaling
+  const scaleRange = [0, 1, 2, 3].map(i => i === index ? 1.05 : 1);
+  const tabScale = useTransform(progress, [0, 1, 2, 3], scaleRange);
+
+  return (
+    <motion.button
+      onClick={onClick}
+      style={{ width: tabWidth }}
+      className="relative z-10 flex items-center justify-center h-[52px] rounded-full overflow-hidden flex-shrink-0 cursor-pointer"
+      aria-label={tab.label}
+    >
+      <motion.div style={{ scale: tabScale }} className="relative z-10 flex items-center justify-center min-w-max">
+        
+        {/* Crossfading Dual-Icon System */}
+        <div className="relative w-[22px] h-[22px] flex-shrink-0">
+          <motion.div style={{ opacity: inverseOpacity }} className="absolute inset-0 text-on-surface-variant flex items-center justify-center">
+            <Icon size={22} strokeWidth={1.8} />
+          </motion.div>
+          <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 text-primary drop-shadow-sm flex items-center justify-center">
+            <Icon size={22} strokeWidth={2.5} />
+          </motion.div>
+          
+          {/* Badge (fades out during active expansion to make room for label) */}
+          {tab.badge > 0 && (
+            <motion.span 
+              style={{ opacity: inverseOpacity }}
+              className="absolute -top-1.5 -right-1.5 bg-primary text-on-primary text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-elevated"
+            >
+              {tab.badge > 9 ? '9+' : tab.badge}
+            </motion.span>
+          )}
+        </div>
+
+        {/* Morphing Text Label */}
+        <motion.div 
+          style={{ 
+            opacity: textOpacity,
+            width: useTransform(textOpacity, [0, 1], [0, 50]),
+            paddingLeft: useTransform(textOpacity, [0, 1], [0, 8]),
+            overflow: "hidden"
+          }}
+          className="flex items-center justify-start"
+        >
+          <span className="font-label text-[11px] font-bold uppercase tracking-widest text-primary whitespace-nowrap">
+            {tab.label}
+          </span>
+        </motion.div>
+      </motion.div>
+    </motion.button>
   );
 }
