@@ -5,7 +5,18 @@ import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 
-// Clean iOS-style clear glass is now used instead of SVG filters
+// SVG Filter Component to create true optical glass refraction & distortion
+const OpticalRefractionFilter = () => (
+  <svg style={{ width: 0, height: 0, position: 'absolute' }} aria-hidden="true">
+    <defs>
+      <filter id="optical-refraction" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="1" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+        <feGaussianBlur in="displaced" stdDeviation="0.5" result="blurred" />
+      </filter>
+    </defs>
+  </svg>
+);
 
 export default function BottomNav() {
   const { getCartItemCount, toggleCart } = useStore();
@@ -87,14 +98,16 @@ export default function BottomNav() {
   if (isAdmin || isProductPage) return null;
 
   return (
-    <nav className="md:hidden fixed bottom-6 left-4 right-4 z-40 optical-nav-dock h-[64px] flex items-center justify-center pointer-events-none">
+    <>
+      <OpticalRefractionFilter />
+      <nav className="md:hidden fixed bottom-6 left-4 right-4 z-40 optical-nav-dock h-[64px] flex items-center justify-center pointer-events-none">
         
         {/* Transparent Track */}
         <motion.div 
           onPanStart={handlePanStart}
           onPan={handlePan} 
           onPanEnd={handlePanEnd}
-          className="relative flex items-center gap-[6px] pointer-events-auto bg-black/[0.03] backdrop-blur-md border border-black/[0.05] p-[6px] rounded-full shadow-inner touch-none"
+          className="relative flex items-center gap-[6px] pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-[6px] rounded-full shadow-lg touch-none"
           style={{ width: 296, height: 64 }}
         >
           {/* ── Floating Optical Glass Lens Overlay ── */}
@@ -120,6 +133,7 @@ export default function BottomNav() {
           ))}
         </motion.div>
       </nav>
+    </>
   );
 }
 
