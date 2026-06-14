@@ -13,6 +13,18 @@ export default function CartDrawer() {
   const total = getCartTotal();
   const savings = getCartSavings();
 
+  // Prevent background scrolling when cart is open
+  useEffect(() => {
+    if (isCartOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isCartOpen]);
+
   // Delivery settings from backend
   const [deliveryFee, setDeliveryFee] = useState(30);
   const [freeAbove, setFreeAbove] = useState(150);
