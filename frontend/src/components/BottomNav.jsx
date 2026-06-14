@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Home, Heart, ClipboardList, ShoppingBasket } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // SVG Filter Component to create true optical glass refraction & distortion
 const OpticalRefractionFilter = () => (
@@ -49,28 +49,34 @@ export default function BottomNav() {
   return (
     <>
       <OpticalRefractionFilter />
-      <nav className="md:hidden fixed bottom-6 left-4 right-4 z-40 optical-nav-dock rounded-full h-[70px] flex items-center px-1.5">
-        <div className="relative flex items-center justify-around w-full h-full">
+      <nav className="md:hidden fixed bottom-6 left-4 right-4 z-40 optical-nav-dock h-[64px] flex items-center justify-center pointer-events-none">
+        
+        {/* Center Container */}
+        <motion.div layout className="flex items-center gap-1.5 pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-1.5 rounded-full shadow-lg">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
 
             return (
-              <button
+              <motion.button
+                layout
                 key={tab.id}
                 onClick={() => {
                   setActiveTab(tab.id);
                   if (tab.action) tab.action();
                   else navigate(tab.to);
                 }}
-                className="relative z-10 flex flex-col items-center justify-center w-full h-full"
+                className={cn(
+                  "relative z-10 flex items-center justify-center gap-2 h-[52px] rounded-full transition-all duration-300",
+                  isActive ? "px-6" : "w-[52px]"
+                )}
                 style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 {/* ── The Floating Optical Lens ── */}
                 {isActive && (
                   <motion.div
                     layoutId="opticalLens"
-                    className="absolute inset-0 optical-lens z-0 my-1.5 mx-1"
+                    className="absolute inset-0 optical-lens z-0 rounded-full"
                     transition={{
                       type: "spring",
                       stiffness: 400,
@@ -80,18 +86,16 @@ export default function BottomNav() {
                   />
                 )}
 
-                {/* ── Magnified Content Inside Lens ── */}
+                {/* ── Content Inside Lens ── */}
                 <motion.div 
-                  className="relative z-10 flex flex-col items-center gap-1"
-                  animate={{ 
-                    scale: isActive ? 1.15 : 1,
-                    y: isActive ? -2 : 0
-                  }}
+                  layout
+                  className="relative z-10 flex items-center gap-2"
+                  animate={{ scale: isActive ? 1.05 : 1 }}
                   transition={{ type: "spring", stiffness: 450, damping: 25 }}
                 >
-                  <span className="relative">
+                  <span className="relative flex-shrink-0">
                     <Icon 
-                      size={24} 
+                      size={22} 
                       strokeWidth={isActive ? 2.5 : 1.8} 
                       className={cn(
                         "transition-colors duration-300", 
@@ -102,30 +106,31 @@ export default function BottomNav() {
                       <motion.span 
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className="absolute -top-1.5 -right-1.5 bg-primary text-on-primary text-[10px] font-bold w-[18px] h-[18px] rounded-full flex items-center justify-center shadow-elevated"
+                        className="absolute -top-1.5 -right-1.5 bg-primary text-on-primary text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-elevated"
                       >
                         {tab.badge > 9 ? '9+' : tab.badge}
                       </motion.span>
                     )}
                   </span>
                   
-                  <motion.span 
-                    animate={{ 
-                      opacity: isActive ? 1 : 0.6,
-                      y: isActive ? 0 : 2
-                    }}
-                    className={cn(
-                      "font-label text-[10px] font-bold uppercase tracking-widest transition-colors duration-300", 
-                      isActive ? "text-primary" : "text-on-surface-variant"
+                  <AnimatePresence initial={false}>
+                    {isActive && (
+                      <motion.span 
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: 'auto' }}
+                        exit={{ opacity: 0, width: 0 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        className="font-label text-[11px] font-bold uppercase tracking-widest text-primary whitespace-nowrap overflow-hidden"
+                      >
+                        {tab.label}
+                      </motion.span>
                     )}
-                  >
-                    {tab.label}
-                  </motion.span>
+                  </AnimatePresence>
                 </motion.div>
-              </button>
+              </motion.button>
             );
           })}
-        </div>
+        </motion.div>
       </nav>
     </>
   );
