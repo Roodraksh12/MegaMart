@@ -67,7 +67,7 @@ export default function BottomNav() {
                   else navigate(tab.to);
                 }}
                 className={cn(
-                  "relative z-10 flex items-center justify-center gap-2 h-[52px] rounded-full transition-all duration-300",
+                  "relative z-10 flex items-center justify-center gap-2 h-[52px] rounded-full",
                   isActive ? "px-6" : "w-[52px]"
                 )}
                 style={{ WebkitTapHighlightColor: 'transparent' }}
