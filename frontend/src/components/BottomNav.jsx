@@ -44,6 +44,30 @@ export default function BottomNav() {
     if (currentTab) setActiveTab(currentTab.id);
   }, [location.pathname]);
 
+  // Handle Drag/Pan Gestures to switch tabs
+  const handlePanEnd = (e, info) => {
+    // Requires a minimum drag distance to trigger a switch
+    const swipeThreshold = 30;
+    
+    if (Math.abs(info.offset.x) > swipeThreshold) {
+      const currentIndex = tabs.findIndex(t => t.id === activeTab);
+      
+      if (info.offset.x > swipeThreshold && currentIndex < tabs.length - 1) {
+        // Dragged Right -> Move to Next Tab
+        const nextTab = tabs[currentIndex + 1];
+        setActiveTab(nextTab.id);
+        if (nextTab.action) nextTab.action();
+        else navigate(nextTab.to);
+      } else if (info.offset.x < -swipeThreshold && currentIndex > 0) {
+        // Dragged Left -> Move to Previous Tab
+        const prevTab = tabs[currentIndex - 1];
+        setActiveTab(prevTab.id);
+        if (prevTab.action) prevTab.action();
+        else navigate(prevTab.to);
+      }
+    }
+  };
+
   if (isAdmin || isProductPage) return null;
 
   return (
@@ -51,8 +75,12 @@ export default function BottomNav() {
       <OpticalRefractionFilter />
       <nav className="md:hidden fixed bottom-6 left-4 right-4 z-40 optical-nav-dock h-[64px] flex items-center justify-center pointer-events-none">
         
-        {/* Center Container */}
-        <motion.div layout className="flex items-center gap-1.5 pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-1.5 rounded-full shadow-lg">
+        {/* Center Container with Pan Gesture */}
+        <motion.div 
+          layout 
+          onPanEnd={handlePanEnd}
+          className="flex items-center gap-1.5 pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-1.5 rounded-full shadow-lg touch-none"
+        >
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
