@@ -4,36 +4,18 @@ import { Home, Heart, ClipboardList, ShoppingBasket } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 
-// Robust SVG Filter for Chromatic Aberration and Liquid Distortion
-// Works across all browsers because we apply it directly, avoiding the buggy backdrop-filter spec.
+// Robust SVG Filter for Clear Liquid Glass Distortion (No rainbow colors)
 const OpticalRefractionFilter = () => (
   <svg style={{ width: 0, height: 0, position: 'absolute' }} aria-hidden="true">
     <defs>
-      <filter id="liquid-chromatic" x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
+      <filter id="liquid-glass" x="-20%" y="-20%" width="140%" height="140%">
         {/* Strong liquid ripples */}
-        <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="1" result="noise" />
+        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="1" result="noise" />
         <feGaussianBlur in="noise" stdDeviation="1.5" result="smoothNoise" />
-        <feDisplacementMap in="SourceGraphic" in2="smoothNoise" scale="25" xChannelSelector="R" yChannelSelector="G" result="displaced" />
-        
-        {/* RGB Split */}
-        <feColorMatrix in="displaced" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="red" />
-        <feColorMatrix in="displaced" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="green" />
-        <feColorMatrix in="displaced" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="blue" />
-
-        {/* Offset for Chromatic Aberration fringes */}
-        <feOffset in="red" dx="5" dy="0" result="red-offset" />
-        <feOffset in="blue" dx="-5" dy="0" result="blue-offset" />
-
-        {/* Recombine channels */}
-        <feBlend mode="screen" in="red-offset" in2="green" result="rg" />
-        <feBlend mode="screen" in="rg" in2="blue-offset" result="chromatic" />
-
-        {/* Invert so the white graphic becomes black, creating Cyan/Red fringes */}
-        <feComponentTransfer in="chromatic" result="inverted">
-          <feFuncR type="linear" slope="-1" intercept="1" />
-          <feFuncG type="linear" slope="-1" intercept="1" />
-          <feFuncB type="linear" slope="-1" intercept="1" />
-        </feComponentTransfer>
+        {/* Warp the graphics cleanly like water */}
+        <feDisplacementMap in="SourceGraphic" in2="smoothNoise" scale="18" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+        {/* Slight blur to soften the glass distortion */}
+        <feGaussianBlur in="displaced" stdDeviation="0.5" />
       </filter>
     </defs>
   </svg>
@@ -154,8 +136,8 @@ export default function BottomNav() {
                 opacity: effectOpacity
               }}
             >
-              {/* Applies the extreme liquid chromatic aberration filter */}
-              <div className="flex items-center gap-[6px] w-full h-full" style={{ filter: 'url(#liquid-chromatic)' }}>
+              {/* Applies the pure liquid glass filter */}
+              <div className="flex items-center gap-[6px] w-full h-full" style={{ filter: 'url(#liquid-glass)' }}>
                 {tabs.map((tab, i) => (
                   <MaskedTabItem key={`mask-${tab.id}`} tab={tab} index={i} progress={progress} />
                 ))}
@@ -231,8 +213,8 @@ function MaskedTabItem({ tab, index, progress }) {
       style={{ width: tabWidth }}
       className="flex items-center justify-center h-[52px] rounded-full flex-shrink-0"
     >
-       {/* Render pure white so the SVG filter can extract RGB and invert it to black with chromatic fringes */}
-       <Icon size={22} strokeWidth={2.5} className="text-white" />
+       {/* Pure icon, cleanly warped by water without rainbow lines */}
+       <Icon size={22} strokeWidth={2.5} className="text-gray-900 drop-shadow-sm" />
     </motion.div>
   );
 }
