@@ -5,18 +5,7 @@ import { useStore } from '../store/useStore';
 import { cn } from '../utils/cn';
 import { motion, useMotionValue, useTransform, animate } from 'framer-motion';
 
-// SVG Filter Component to create true optical glass refraction & distortion
-const OpticalRefractionFilter = () => (
-  <svg style={{ width: 0, height: 0, position: 'absolute' }} aria-hidden="true">
-    <defs>
-      <filter id="optical-refraction" x="-20%" y="-20%" width="140%" height="140%">
-        <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="1" result="noise" />
-        <feDisplacementMap in="SourceGraphic" in2="noise" scale="4" xChannelSelector="R" yChannelSelector="G" result="displaced" />
-        <feGaussianBlur in="displaced" stdDeviation="0.5" result="blurred" />
-      </filter>
-    </defs>
-  </svg>
-);
+// Native iOS Frosted Glass implementation (No SVG filters)
 
 export default function BottomNav() {
   const { getCartItemCount, toggleCart } = useStore();
@@ -99,25 +88,27 @@ export default function BottomNav() {
 
   return (
     <>
-      <OpticalRefractionFilter />
-      <nav className="md:hidden fixed bottom-6 left-4 right-4 z-40 optical-nav-dock h-[64px] flex items-center justify-center pointer-events-none">
-        
-        {/* Transparent Track */}
-        <motion.div 
-          onPanStart={handlePanStart}
-          onPan={handlePan} 
-          onPanEnd={handlePanEnd}
-          className="relative flex items-center gap-[6px] pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-[6px] rounded-full shadow-lg touch-none"
-          style={{ width: 296, height: 64 }}
-        >
-          {/* ── Floating Optical Glass Lens Overlay ── */}
+          {/* ── Tab Items (z-10 inactive, z-30 active) ── */}
+          {tabs.map((tab, i) => (
+            <TabItem 
+              key={tab.id} 
+              tab={tab} 
+              index={i} 
+              progress={progress} 
+              onClick={() => {
+                setActiveTab(tab.id);
+                animate(progress, i, { type: "spring", stiffness: 450, damping: 32 });
+                if (tab.action) tab.action();
+                else navigate(tab.to);
+              }}
+            />
+          ))}
+
+          {/* ── Native iOS Frosted Glass Lens (z-20) ── */}
           <motion.div
-            className="absolute top-[6px] bottom-[6px] optical-lens z-0 rounded-full pointer-events-none"
+            className="absolute top-[6px] bottom-[6px] optical-lens z-20 rounded-full pointer-events-none"
             style={{ left: lensLeft, width: lensWidth }}
           />
-
-          {/* ── Tab Items ── */}
-          {tabs.map((tab, i) => (
             <TabItem 
               key={tab.id} 
               tab={tab} 
@@ -158,46 +149,40 @@ function TabItem({ tab, index, progress, onClick }) {
     <motion.button
       onClick={onClick}
       style={{ width: tabWidth }}
-      className="relative z-10 flex items-center justify-center h-[52px] rounded-full overflow-hidden flex-shrink-0 cursor-pointer"
+      className="relative flex items-center justify-center h-[52px] rounded-full flex-shrink-0 cursor-pointer"
       aria-label={tab.label}
     >
-      <motion.div style={{ scale: tabScale }} className="relative z-10 flex items-center justify-center min-w-max">
+      <div className="relative w-full h-full flex items-center justify-center min-w-max">
         
-        {/* Crossfading Dual-Icon System */}
-        <div className="relative w-[22px] h-[22px] flex-shrink-0">
-          <motion.div style={{ opacity: inverseOpacity }} className="absolute inset-0 text-on-surface-variant flex items-center justify-center">
-            <Icon size={22} strokeWidth={1.8} />
-          </motion.div>
-          <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 text-primary drop-shadow-sm flex items-center justify-center">
-            <Icon size={22} strokeWidth={2.5} />
-          </motion.div>
-          
-          {/* Badge (fades out during active expansion to make room for label) */}
-          {tab.badge > 0 && (
-            <motion.span 
-              style={{ opacity: inverseOpacity }}
-              className="absolute -top-1.5 -right-1.5 bg-primary text-on-primary text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-elevated"
-            >
-              {tab.badge > 9 ? '9+' : tab.badge}
-            </motion.span>
-          )}
-        </div>
-
-        {/* Morphing Text Label */}
-        <motion.div 
-          style={{ 
-            opacity: textOpacity,
-            width: useTransform(textOpacity, [0, 1], [0, 50]),
-            paddingLeft: useTransform(textOpacity, [0, 1], [0, 8]),
-            overflow: "hidden"
-          }}
-          className="flex items-center justify-start"
-        >
-          <span className="font-label text-[11px] font-bold uppercase tracking-widest text-primary whitespace-nowrap">
-            {tab.label}
-          </span>
+        {/* Inactive Icon (z-10, gets beautifully blurred by the glass lens passing over it) */}
+        <motion.div style={{ opacity: inverseOpacity }} className="absolute inset-0 z-10 text-on-surface-variant flex items-center justify-center">
+          <Icon size={22} strokeWidth={1.8} />
         </motion.div>
-      </motion.div>
+
+        {/* Active Icon & Text (z-30, perfectly sharp sitting on top of the frosted glass lens) */}
+        <motion.div style={{ opacity: textOpacity }} className="absolute inset-0 z-30 text-primary drop-shadow-sm flex items-center justify-center">
+          <Icon size={22} strokeWidth={2.5} />
+          
+          {tab.badge > 0 && (
+            <span className="absolute top-[8px] right-[8px] bg-primary text-on-primary text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-elevated">
+              {tab.badge > 9 ? '9+' : tab.badge}
+            </span>
+          )}
+
+          <motion.div 
+            style={{ 
+              width: useTransform(textOpacity, [0, 1], [0, 50]),
+              paddingLeft: useTransform(textOpacity, [0, 1], [0, 8]),
+              overflow: "hidden"
+            }}
+            className="flex items-center justify-start ml-1"
+          >
+            <span className="font-label text-[11px] font-bold uppercase tracking-widest whitespace-nowrap">
+              {tab.label}
+            </span>
+          </motion.div>
+        </motion.div>
+      </div>
     </motion.button>
   );
 }
