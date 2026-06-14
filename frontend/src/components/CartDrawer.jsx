@@ -123,7 +123,7 @@ export default function CartDrawer() {
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             style={{ willChange: "transform" }}
-            className="fixed top-2 bottom-2 right-2 sm:right-4 h-[calc(100vh-16px)] w-[calc(100%-16px)] sm:w-[420px] glass-panel z-50 flex flex-col shadow-ambient-lg rounded-2xl overflow-hidden"
+            className="fixed top-2 bottom-2 right-2 sm:right-4 h-[calc(100dvh-16px)] w-[calc(100%-16px)] sm:w-[420px] glass-panel z-50 flex flex-col shadow-ambient-lg rounded-2xl overflow-hidden"
           >
             {/* Header */}
             <div className="p-6 border-b border-white/20 flex justify-between items-center bg-white/30">
@@ -273,7 +273,7 @@ export default function CartDrawer() {
                           value={promoCode}
                           onChange={e => { setPromoCode(e.target.value.toUpperCase()); setPromoError(''); setPromoStatus(null); }}
                           onKeyDown={e => e.key === 'Enter' && applyPromo()}
-                          className="w-full pl-8 pr-3 py-2.5 text-sm bg-white/50 border border-white/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-body text-on-surface placeholder:text-outline"
+                          className="w-full pl-8 pr-3 py-2.5 text-[16px] sm:text-sm bg-white/50 border border-white/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all font-body text-on-surface placeholder:text-outline"
                         />
                       </div>
                       <button
