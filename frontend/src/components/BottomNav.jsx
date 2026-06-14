@@ -89,6 +89,16 @@ export default function BottomNav() {
 
   return (
     <>
+      <nav className="md:hidden fixed bottom-6 left-4 right-4 z-40 optical-nav-dock h-[64px] flex items-center justify-center pointer-events-none">
+        
+        {/* Transparent Track */}
+        <motion.div 
+          onPanStart={handlePanStart}
+          onPan={handlePan} 
+          onPanEnd={handlePanEnd}
+          className="relative flex items-center gap-[6px] pointer-events-auto bg-white/30 backdrop-blur-sm border border-white/40 p-[6px] rounded-full shadow-lg touch-none"
+          style={{ width: 296, height: 64 }}
+        >
           {/* ── Tab Items (z-10 inactive, z-30 active) ── */}
           {tabs.map((tab, i) => (
             <TabItem 
